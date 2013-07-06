@@ -116,6 +116,8 @@ public class StageManager {
     case 4:
       ap.pattern = BOTH_SIDES;
       break;
+    default:
+      break;
     }
     switch (rand.nextInt(3)) {
     case 0:
@@ -124,6 +126,8 @@ public class StageManager {
     case 1:
     case 2:
       ap.sequence = FIXED;
+      break;
+    default:
       break;
     }
   }
@@ -159,6 +163,8 @@ public class StageManager {
       ap.groupInterval = 45 + rand.nextInt(20);
       ap.interval = 25 + rand.nextInt(5);
       break;
+    default:
+      break;
     }
   }
 
@@ -193,6 +199,8 @@ public class StageManager {
       ap.groupInterval = 150 + rand.nextInt(50);
       ap.interval = 100;
       break;
+    default:
+      break;
     }
   }
 
@@ -219,6 +227,8 @@ public class StageManager {
       ap.groupInterval = 270 + rand.nextInt(50);
       ap.interval = 200;
       break;
+    default:
+      break;
     }
   }
 
@@ -233,6 +243,8 @@ public class StageManager {
     case LARGE:
       setLargeAppearance(ap);
       break;
+    default:
+      break;
     }
     ap.cnt = 0;
     ap.left = ap.num;
@@ -241,7 +253,7 @@ public class StageManager {
   }
 
   // [#smalltype, #middletype, #largetype]
-  private const int MIDDLE_RUSH_SECTION_PATTERN = 6; 
+  private const int MIDDLE_RUSH_SECTION_PATTERN = 6;
   private const int apparancePattern[][][3] =
     [
      [[1, 0, 0], [2, 0, 0], [1, 1, 0], [1, 0, 1], [2, 1, 0], [2, 0, 1], [0, 1, 1]],
@@ -255,7 +267,7 @@ public class StageManager {
     field.aimSpeed = 0.1 + section * 0.02;
     if (section == 4) {
       // Set the middle boss.
-      auto Vector pos = new Vector;
+      scope Vector pos = new Vector;
       pos.x = 0; pos.y = field.size.y / 4 * 3;
       gameManager.addBoss(pos, std.math.PI, middleBossType);
       bossSection = true;
@@ -264,7 +276,7 @@ public class StageManager {
       return;
     } else if (section == 9) {
       // Set the large boss.
-      auto Vector pos = new Vector;
+      scope Vector pos = new Vector;
       pos.x = 0; pos.y = field.size.y / 4 * 3;
       gameManager.addBoss(pos, std.math.PI, largeBossType);
       bossSection = true;
@@ -295,16 +307,16 @@ public class StageManager {
     else if (middleRushSection)
       ap = MIDDLE_RUSH_SECTION_PATTERN;
     for (int i = 0; i < apparancePattern[gameManager.mode][ap][0]; i++, apNum++) {
-      EnemyAppearance* ap = &(appearance[apNum]);
-      setAppearance(ap, SMALL);
+      EnemyAppearance* ap1 = &(appearance[apNum]);
+      setAppearance(ap1, SMALL);
     }
     for (int i = 0; i < apparancePattern[gameManager.mode][ap][1]; i++, apNum++) {
-      EnemyAppearance* ap = &(appearance[apNum]);
-      setAppearance(ap, MIDDLE);
+      EnemyAppearance* ap1 = &(appearance[apNum]);
+      setAppearance(ap1, MIDDLE);
     }
     for (int i = 0; i < apparancePattern[gameManager.mode][ap][2]; i++, apNum++) {
-      EnemyAppearance* ap = &(appearance[apNum]);
-      setAppearance(ap, LARGE);
+      EnemyAppearance* ap1 = &(appearance[apNum]);
+      setAppearance(ap1, LARGE);
     }
   }
 
@@ -343,7 +355,7 @@ public class StageManager {
     createStage();
     gotoNextSection();
   }
-  
+
   public void move() {
     for (int i = 0; i < apNum; i++) {
       EnemyAppearance* ap = &(appearance[i]);
@@ -370,6 +382,8 @@ public class StageManager {
 	break;
       case FIXED:
 	p = ap.pos;
+	break;
+      default:
 	break;
       }
       float d;
@@ -413,6 +427,8 @@ public class StageManager {
 	else
 	  d = std.math.PI / 2 * 3;
 	break;
+      default:
+	break;
       }
       apos.x *= 0.88;
       gameManager.addEnemy(apos, d, ap.type, ap.moveParser);
@@ -427,7 +443,7 @@ public class StageManager {
 	ap.cnt = ap.interval;
       }
     }
-    if (!bossSection || 
+    if (!bossSection ||
 	(!EnemyType.isExist[middleBossType.id] && !EnemyType.isExist[largeBossType.id]))
       sectionCnt--;
     if (sectionCnt < sectionIntervalCnt) {

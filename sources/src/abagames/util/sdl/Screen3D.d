@@ -7,6 +7,7 @@ module abagames.util.sdl.Screen3D;
 
 private:
 import std.string;
+import std.conv;
 import SDL;
 import opengl;
 import abagames.util.Logger;
@@ -39,7 +40,7 @@ public class Screen3D: Screen {
     // Initialize SDL.
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
       throw new SDLInitFailedException(
-	"Unable to initialize SDL: " ~ std.string.toString(SDL_GetError()));
+	"Unable to initialize SDL: " ~ to!string(SDL_GetError()));
     }
     // Create an OpenGL screen.
     Uint32 videoFlags;
@@ -50,7 +51,7 @@ public class Screen3D: Screen {
     } 
     if (SDL_SetVideoMode(width, height, 0, videoFlags) == null) {
       throw new SDLInitFailedException
-	("Unable to create SDL screen: " ~ std.string.toString(SDL_GetError()));
+	("Unable to create SDL screen: " ~ to!string(SDL_GetError()));
     }
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     resized(width, height);
@@ -67,8 +68,8 @@ public class Screen3D: Screen {
     //gluPerspective(45.0f, (GLfloat)width/(GLfloat)height, nearPlane, farPlane);
     glFrustum(-nearPlane,
 	      nearPlane,
-	      -nearPlane * (GLfloat)height / (GLfloat)width,
-	      nearPlane * (GLfloat)height / (GLfloat)width,
+	      -nearPlane * cast(GLfloat)height / cast(GLfloat)width,
+	      nearPlane * cast(GLfloat)height / cast(GLfloat)width,
 	      0.1f, farPlane);
     glMatrixMode(GL_MODELVIEW);
   }
@@ -99,7 +100,7 @@ public class Screen3D: Screen {
     throw new Exception("OpenGL error");
   }
 
-  protected void setCaption(char[] name) {
+  protected void setCaption(const char[] name) {
     SDL_WM_SetCaption(std.string.toStringz(name), null);
   }
 

@@ -63,7 +63,7 @@ public class Bonus: Actor {
   }
 
   public override void init(ActorInitializer ini) {
-    BonusInitializer bi = (BonusInitializer) ini;
+    BonusInitializer bi = cast(BonusInitializer) ini;
     field = bi.field;
     ship = bi.ship;
     manager = bi.manager;
@@ -126,13 +126,13 @@ public class Bonus: Actor {
 	missBonus();
 	isExist = false;
 	return;
-      }    
+      }
     }
     cnt++;
     if (cnt < RETRO_CNT)
       return;
     float d = pos.dist(ship.pos);
-    if (d < ACQUIRE_WIDTH * (1 + (float) inhaleCnt * 0.2) && ship.cnt >= -Ship.INVINCIBLE_CNT) {
+    if (d < ACQUIRE_WIDTH * (1 + cast(float) inhaleCnt * 0.2) && ship.cnt >= -Ship.INVINCIBLE_CNT) {
       getBonus();
       isExist = false;
       return;
@@ -157,8 +157,8 @@ public class Bonus: Actor {
   public override void draw() {
     float retro;
     if (cnt < RETRO_CNT)
-      retro = 1 - (float) cnt / RETRO_CNT;
-    else 
+      retro = 1 - cast(float) cnt / RETRO_CNT;
+    else
       retro = 0;
     float d = cnt * 0.1;
     float ox = sin(d) * 0.3;
@@ -176,9 +176,9 @@ public class Bonus: Actor {
 	Screen3D.setColor(0.4, 0.9, 0.6, 0.7);
       else
 	Screen3D.setColor(0.8, 0.9, 0.5, 0.7);
-      P47Screen.drawBoxLine(pos.x - ox - BOX_SIZE / 2, pos.y - oy - BOX_SIZE / 2, 
+      P47Screen.drawBoxLine(pos.x - ox - BOX_SIZE / 2, pos.y - oy - BOX_SIZE / 2,
 			    BOX_SIZE, BOX_SIZE);
-      P47Screen.drawBoxLine(pos.x + ox - BOX_SIZE / 2, pos.y + oy - BOX_SIZE / 2, 
+      P47Screen.drawBoxLine(pos.x + ox - BOX_SIZE / 2, pos.y + oy - BOX_SIZE / 2,
 			    BOX_SIZE, BOX_SIZE);
       P47Screen.drawBoxLine(pos.x - oy - BOX_SIZE / 2, pos.y + ox - BOX_SIZE / 2,
 			    BOX_SIZE, BOX_SIZE);

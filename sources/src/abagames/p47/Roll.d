@@ -22,7 +22,7 @@ public class Roll: Actor {
  public:
   bool released;
   static const int LENGTH = 4;
-  Vector pos[LENGTH]; 
+  Vector pos[LENGTH];
   static const int NO_COLLISION_CNT = 45;
   int cnt;
  private:
@@ -40,7 +40,7 @@ public class Roll: Actor {
   }
 
   public override void init(ActorInitializer ini) {
-    RollInitializer ri = (RollInitializer) ini;
+    RollInitializer ri = cast(RollInitializer) ini;
     ship = ri.ship;
     field = ri.field;
     manager = ri.manager;
@@ -53,7 +53,7 @@ public class Roll: Actor {
   public void set() {
     for (int i = 0; i < LENGTH; i++) {
       pos[i].x = ship.pos.x;
-      pos[i].y = ship.pos.y; 
+      pos[i].y = ship.pos.y;
       vel[i].x = vel[i].y = 0;
     }
     cnt = 0;
@@ -69,19 +69,19 @@ public class Roll: Actor {
 	isExist = false;
 	return;
       }
-      manager.addParticle(pos[0], std.math.PI, 
+      manager.addParticle(pos[0], std.math.PI,
 			  BASE_SIZE * LENGTH, SPEED / 8);
     } else {
       if (dist < BASE_DIST)
 	dist += BASE_DIST / 90;
-      pos[0].x = ship.pos.x + sin(cnt * 0.1) * dist; 
+      pos[0].x = ship.pos.x + sin(cnt * 0.1) * dist;
       pos[0].y = ship.pos.y + cos(cnt * 0.1) * dist;
     }
     float dist, deg, v;
     for (int i = 1; i < LENGTH; i++) {
       pos[i].x += vel[i].x;
       pos[i].y += vel[i].y;
-      vel[i].x *= BASE_RESISTANCE; 
+      vel[i].x *= BASE_RESISTANCE;
       vel[i].y *= BASE_RESISTANCE;
       dist = pos[i].dist(pos[i - 1]);
       if (dist <= BASE_LENGTH)
@@ -99,7 +99,7 @@ public class Roll: Actor {
     else
       P47Screen.setRetroParam(0.5, 0.2);
     for (int i = 0; i < LENGTH; i++) {
-      P47Screen.drawBoxRetro(pos[i].x, pos[i].y, 
+      P47Screen.drawBoxRetro(pos[i].x, pos[i].y,
 			     BASE_SIZE * (LENGTH - i),  BASE_SIZE * (LENGTH - i),
 			     cnt * 0.1);
     }

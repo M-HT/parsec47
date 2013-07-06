@@ -15,7 +15,6 @@ import abagames.util.Actor;
 import abagames.util.ActorInitializer;
 import abagames.util.ActorPool;
 import abagames.util.sdl.Screen3D;
-import abagames.p47.Ship;
 import abagames.p47.Field;
 import abagames.p47.Bonus;
 import abagames.p47.Shot;
@@ -53,7 +52,6 @@ public class Enemy: Actor {
   ActorPool shots;
   ActorPool rolls;
   ActorPool locks;
-  Ship ship;
   P47GameManager manager;
   int cnt;
   BulletActor topBullet;
@@ -78,8 +76,8 @@ public class Enemy: Actor {
   int velCnt;
   bool damaged;
   int bossTimer;
-  
-  public static this() {
+
+  public static void initRand() {
     rand = new Rand;
   }
 
@@ -88,13 +86,12 @@ public class Enemy: Actor {
   }
 
   public override void init(ActorInitializer ini) {
-    EnemyInitializer ei = (EnemyInitializer) ini;
+    EnemyInitializer ei = cast(EnemyInitializer) ini;
     field = ei.field;
     bullets = ei.bullets;
     shots = ei.shots;
     rolls = ei.rolls;
     locks = ei.locks;
-    ship = ei.ship;
     manager = ei.manager;
     pos = new Vector;
     for (int i = 0; i < movePoint.length; i++) {
@@ -107,13 +104,13 @@ public class Enemy: Actor {
   }
 
   public void set(Vector p, float d, EnemyType type, BulletMLParser *moveParser) {
-    pos.x = p.x; 
+    pos.x = p.x;
     pos.y = p.y;
     this.type = type;
     BulletMLRunner *moveRunner = BulletMLRunner_new_parser(moveParser);
     BulletActorPool.registFunctions(moveRunner);
     moveBullet = bullets.addBullet(moveRunner,
-				   pos.x, pos.y, d, 0, 0.5, 
+				   pos.x, pos.y, d, 0, 0.5,
 				   1, 0, 0, 1, 1);
     if (!moveBullet)
       return;
@@ -131,7 +128,7 @@ public class Enemy: Actor {
   }
 
   public void setBoss(Vector p, float d, EnemyType type) {
-    pos.x = p.x; 
+    pos.x = p.x;
     pos.y = p.y;
     this.type = type;
     moveBullet = null;
@@ -154,7 +151,7 @@ public class Enemy: Actor {
       int idx1 = rand.nextInt(movePointNum);
       int idx2 = rand.nextInt(movePointNum);
       if (idx1 == idx2) {
-	idx2++; 
+	idx2++;
 	if (idx2 >= movePointNum) idx2 = 0;
       }
       Vector mp = movePoint[idx1];
@@ -198,8 +195,8 @@ public class Enemy: Actor {
     if (br.morphCnt > 0)
       ba = bullets.addBullet
 	(br.parser, runner,
-	 bx, by, baseDeg, 0, br.rank, 
-	 br.speedRank, 
+	 bx, by, baseDeg, 0, br.rank,
+	 br.speedRank,
 	 br.shape, br.color, br.bulletSize,
 	 br.xReverse * xr,
 	 br.morphParser, br.morphNum, br.morphCnt);
@@ -207,7 +204,7 @@ public class Enemy: Actor {
       ba = bullets.addBullet
 	(br.parser, runner,
 	 bx, by, baseDeg, 0, br.rank,
-	 br.speedRank, 
+	 br.speedRank,
 	 br.shape, br.color, br.bulletSize,
 	 br.xReverse * xr);
     return ba;
@@ -234,7 +231,7 @@ public class Enemy: Actor {
   }
 
   private void addBonuses(Vector p, int sl) {
-    int bn = (float) sl * 3 / (((float) cnt / 30) + 1) * Bonus.rate + 0.9;
+    int bn = cast(int)(cast(float) sl * 3 / ((cast(float) cnt / 30) + 1) * Bonus.rate + 0.9);
     manager.addBonus(pos, p, bn);
   }
 
@@ -277,7 +274,7 @@ public class Enemy: Actor {
   private static int LOCK_DAMAGE = 7;
   private static const int ENEMY_TYPE_SCORE[] = [100, 500, 1000, 5000, 10000];
   private static const int ENEMY_WING_SCORE = 1000;
-  
+
   private void addDamage(int dmg) {
     shield -= dmg;
     if (shield <= 0) {
@@ -342,7 +339,7 @@ public class Enemy: Actor {
 
   // Check shots and rolls hit the enemy.
   private int checkHit(Vector p, float xofs, float yofs) {
-    if (fabs(p.x - pos.x) < type.collisionSize.x + xofs && 
+    if (fabs(p.x - pos.x) < type.collisionSize.x + xofs &&
 	fabs(p.y - pos.y) < type.collisionSize.y + yofs)
       return HIT;
     if (type.wingCollision) {
@@ -350,7 +347,7 @@ public class Enemy: Actor {
 	if (battery[i].shield <= 0)
 	  continue;
 	BatteryType bt = type.batteryType[i];
-	if (fabs(p.x - pos.x - bt.collisionPos.x) < bt.collisionSize.x + xofs && 
+	if (fabs(p.x - pos.x - bt.collisionPos.x) < bt.collisionSize.x + xofs &&
 	    fabs(p.y - pos.y - bt.collisionPos.y) < bt.collisionSize.y + yofs)
 	  return i;
       }
@@ -371,7 +368,7 @@ public class Enemy: Actor {
 	  continue;
 	BatteryType bt = type.batteryType[i];
 	float by = pos.y + bt.collisionPos.y;
-	if (fabs(p.x - pos.x - bt.collisionPos.x) < bt.collisionSize.x + xofs && 
+	if (fabs(p.x - pos.x - bt.collisionPos.x) < bt.collisionSize.x + xofs &&
 	    by < lock.lockMinY && by > p.y) {
 	  lock.lockMinY = by;
 	  lp = i;
@@ -389,7 +386,7 @@ public class Enemy: Actor {
     for (int i = 0; i < shots.actor.length; i++) {
       if (!shots.actor[i].isExist)
 	continue;
-      Vector sp = ((Shot) shots.actor[i]).pos;
+      Vector sp = (cast(Shot) shots.actor[i]).pos;
       ch = checkHit(sp, 0.7, 0);
       if (ch >= HIT) {
 	manager.addParticle(sp, rand.nextSignedFloat(0.3), 0, Shot.SPEED / 4);
@@ -407,10 +404,10 @@ public class Enemy: Actor {
       for (int i = 0; i < rolls.actor.length; i++) {
 	if (!rolls.actor[i].isExist)
 	  continue;
-	Roll rl = (Roll) rolls.actor[i];
+	Roll rl = cast(Roll) rolls.actor[i];
 	ch = checkHit(rl.pos[0], 1.0, 1.0);
 	if (ch >= HIT) {
-	  for (int i = 0; i < 4; i++)
+	  for (int j = 0; j < 4; j++)
 	    manager.addParticle(rl.pos[0], rand.nextFloat(std.math.PI * 2), 0, Shot.SPEED / 10);
 	  float rd = ROLL_DAMAGE;
 	  if (rl.released) {
@@ -420,9 +417,9 @@ public class Enemy: Actor {
 	      continue;
 	  }
 	  if (ch == HIT)
-	    addDamage(rd);
+	    addDamage(cast(int)rd);
 	  else
-	    addDamageBattery(ch, rd);
+	    addDamageBattery(ch, cast(int)rd);
 	}
       }
     } else if (type.type != EnemyType.SMALL) {
@@ -430,7 +427,7 @@ public class Enemy: Actor {
       for (int i = 0; i < locks.actor.length; i++) {
 	if (!locks.actor[i].isExist)
 	  continue;
-	Lock lk = (Lock) locks.actor[i];
+	Lock lk = cast(Lock) locks.actor[i];
 	if (lk.state == Lock.SEARCH || lk.state == Lock.SEARCHED) {
 	  ch = checkLocked(lk.pos[0], 2.5, lk);
 	  if (ch >= HIT) {
@@ -442,7 +439,7 @@ public class Enemy: Actor {
 	} else if (lk.state == Lock.FIRED && lk.lockedEnemy == this) {
 	  ch = checkHit(lk.pos[0], 1.5, 1.5);
 	  if (ch >= HIT && ch == lk.lockedPart) {
-	    for (int i = 0; i < 4; i++)
+	    for (int j = 0; j < 4; j++)
 	      manager.addParticle(lk.pos[0], rand.nextFloat(std.math.PI * 2), 0, Shot.SPEED / 10);
 	    if (ch == HIT)
 	      addDamage(LOCK_DAMAGE);
@@ -494,7 +491,7 @@ public class Enemy: Actor {
     float od = d - deg;
     if (od > std.math.PI)
       od -= std.math.PI * 2;
-    else if (od < -std.math.PI) 
+    else if (od < -std.math.PI)
       od += std.math.PI * 2;
     float aod = std.math.fabs(od);
     if (aod < BOSS_MOVE_DEG) {
@@ -595,7 +592,7 @@ public class Enemy: Actor {
 	if (z < 0)
 	  z -= APPEARANCE_Z / 60;
 	appCnt--;
-	mtr = 1.0 - (float)appCnt / APPEARANCE_CNT;
+	mtr = 1.0 - cast(float)appCnt / APPEARANCE_CNT;
       } else if (dstCnt > 0) {
 	addFragments(1, z, 0.05, rand.nextSignedFloat(std.math.PI));
 	manager.clearBullets();
@@ -609,7 +606,7 @@ public class Enemy: Actor {
 	  manager.setBossShieldMeter(0, 0, 0, 0, 0, 0);
 	  return;
 	}
-	mtr = (float)dstCnt / DESTROYED_CNT;
+	mtr = cast(float)dstCnt / DESTROYED_CNT;
       } else if (timeoutCnt > 0) {
 	z += DESTROYED_Z / 60;
 	timeoutCnt--;
@@ -641,16 +638,16 @@ public class Enemy: Actor {
     if (appCnt > 0) {
       // Appearance effect of the boss.
       P47Screen.setRetroZ(z);
-      ap = (float) appCnt / APPEARANCE_CNT;
+      ap = cast(float) appCnt / APPEARANCE_CNT;
       P47Screen.setRetroParam(1, type.retroSize * (1 + ap * 10));
       P47Screen.setRetroColor(type.r, type.g, type.b, (1 - ap));
     } else if (dstCnt > 0) {
       P47Screen.setRetroZ(z);
-      ap = (float) dstCnt / DESTROYED_CNT / 2 + 0.5;
+      ap = cast(float) dstCnt / DESTROYED_CNT / 2 + 0.5;
       P47Screen.setRetroColor(type.r, type.g, type.b, ap);
     } else if (timeoutCnt > 0) {
       P47Screen.setRetroZ(z);
-      ap = (float) timeoutCnt / TIMEOUT_CNT;
+      ap = cast(float) timeoutCnt / TIMEOUT_CNT;
       P47Screen.setRetroColor(type.r, type.g, type.b, ap);
     } else {
       P47Screen.setRetroParam(1, type.retroSize);
@@ -694,21 +691,21 @@ public class Enemy: Actor {
 	P47Screen.drawLineRetro(pos.x + bt.wingShapePos[0].x, pos.y + bt.wingShapePos[0].y,
 				pos.x + bt.wingShapePos[1].x, pos.y + bt.wingShapePos[1].y);
       } else {
-	for (int i = 0; i < BatteryType.WING_SHAPE_POINT_NUM; i++, ni++) {
+	for (int j = 0; j < BatteryType.WING_SHAPE_POINT_NUM; j++, ni++) {
 	  if (ni >= BatteryType.WING_SHAPE_POINT_NUM)
 	    ni = 0;
-	  P47Screen.drawLineRetro(pos.x + bt.wingShapePos[i].x, pos.y + bt.wingShapePos[i].y,
+	  P47Screen.drawLineRetro(pos.x + bt.wingShapePos[j].x, pos.y + bt.wingShapePos[j].y,
 				  pos.x + bt.wingShapePos[ni].x, pos.y + bt.wingShapePos[ni].y);
 	}
 	if (type.type != EnemyType.SMALL) {
 	  glBegin(GL_TRIANGLE_FAN);
 	  Screen3D.setColor
 	    (P47Screen.retroR, P47Screen.retroG, P47Screen.retroB, P47Screen.retroA);
-	  for (int i = 0; i < BatteryType.WING_SHAPE_POINT_NUM; i++) {
-	    if (i == 2)
+	  for (int j = 0; j < BatteryType.WING_SHAPE_POINT_NUM; j++) {
+	    if (j == 2)
 	      Screen3D.setColor
 		(P47Screen.retroR, P47Screen.retroG, P47Screen.retroB, 0);
-	    glVertex3f(pos.x + bt.wingShapePos[i].x, pos.y + bt.wingShapePos[i].y, z);
+	    glVertex3f(pos.x + bt.wingShapePos[j].x, pos.y + bt.wingShapePos[j].y, z);
 	  }
 	  glEnd();
 	}
@@ -725,17 +722,15 @@ public class EnemyInitializer: ActorInitializer {
   ActorPool shots;
   ActorPool rolls;
   ActorPool locks;
-  Ship ship;
   P47GameManager manager;
 
-  public this(Field field, BulletActorPool bullets, ActorPool shots, 
-	      ActorPool rolls, ActorPool locks, Ship ship, P47GameManager manager) {
+  public this(Field field, BulletActorPool bullets, ActorPool shots,
+	      ActorPool rolls, ActorPool locks, P47GameManager manager) {
     this.field = field;
     this.bullets = bullets;
     this.shots = shots;
     this.rolls = rolls;
     this.locks = locks;
-    this.ship = ship;
     this.manager = manager;
   }
 }

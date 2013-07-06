@@ -8,6 +8,7 @@ module abagames.p47.LuminousScreen;
 private:
 import std.math;
 import std.string;
+import std.c.string;
 import opengl;
 import abagames.util.Rand;
 
@@ -19,15 +20,15 @@ public class LuminousScreen {
   GLuint luminousTexture;
   const int LUMINOUS_TEXTURE_WIDTH_MAX = 64;
   const int LUMINOUS_TEXTURE_HEIGHT_MAX = 64;
-  GLuint td[LUMINOUS_TEXTURE_WIDTH_MAX * LUMINOUS_TEXTURE_HEIGHT_MAX * 4 * uint.size];
+  GLuint td[LUMINOUS_TEXTURE_WIDTH_MAX * LUMINOUS_TEXTURE_HEIGHT_MAX * 4 * uint.sizeof];
   int luminousTextureWidth = 64, luminousTextureHeight = 64;
   int screenWidth, screenHeight;
   float luminous;
 
   private void makeLuminousTexture() {
-    uint *data = td;
+    uint *data = td.ptr;
     int i;
-    memset(data, 0, luminousTextureWidth * luminousTextureHeight * 4 * uint.size);
+    memset(data, 0, luminousTextureWidth * luminousTextureHeight * 4 * uint.sizeof);
     glGenTextures(1, &luminousTexture);
     glBindTexture(GL_TEXTURE_2D, luminousTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, 4, luminousTextureWidth, luminousTextureHeight, 0,
@@ -57,7 +58,7 @@ public class LuminousScreen {
 
   public void endRenderToTexture() {
     glBindTexture(GL_TEXTURE_2D, luminousTexture);
-    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
+    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
 		     0, 0, luminousTextureWidth, luminousTextureHeight, 0);
     glViewport(0, 0, screenWidth, screenHeight);
   }

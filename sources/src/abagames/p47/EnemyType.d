@@ -123,7 +123,7 @@ public class EnemyType {
 
   // To avoid using the same morph pattern.
   private static bool usedMorphParser[BarrageManager.BARRAGE_MAX];
-  
+
   private void setBarrageType(Barrage br, int btn, int mode) {
     br.parser = barrageManager.parser
       [btn]
@@ -233,10 +233,12 @@ public class EnemyType {
       eg = rand.nextFloat(0.7) + 0.3;
       eb = 1;
       break;
+    default:
+      break;
     }
   }
 
-  private static const float[][] enemySize = 
+  private static const float[][] enemySize =
     [
      [0.3, 0.3, 0.3, 0.1,  0.1,  1.0, 0.4, 0.6, 0.9],
      [0.4, 0.2, 0.4, 0.1,  0.15,  2.2, 0.2, 1.6, 1.0],
@@ -244,9 +246,6 @@ public class EnemyType {
      [0.9, 0.3, 0.7, 0.2,  0.25,  5.0, 0.6, 3.0, 1.5],
      [1.2, 0.2, 0.9, 0.1,  0.3,  7.0, 0.8, 4.5, 1.5],
      ];
-  private enum {
-    SMALL, MIDDLE, LARGE, MIDDLEBOSS, LARGEBOSS,
-  }
 
   // Set the shepe of the BatteryType.
   private void setEnemyShapeAndWings(int size) {
@@ -276,6 +275,8 @@ public class EnemyType {
     case LARGE:
     case LARGEBOSS:
       batteryNum = 4;
+      break;
+    default:
       break;
     }
     float px, py, mpx, mpy;
@@ -321,6 +322,8 @@ public class EnemyType {
 	case LARGEBOSS:
 	  bsl = 200 + rand.nextInt(50);
 	  break;
+	default:
+	  break;
 	}
 	createEnemyColor();
 	wrl = -1;
@@ -352,6 +355,8 @@ public class EnemyType {
 	bt.wingShapePos[2].x = mpx * wrl;
 	bt.wingShapePos[2].y = mpy;
 	break;
+      default:
+	break;
       }
       bt.collisionPos.x = (px + px / 4) / 2 * wrl;
       bt.collisionPos.y = (py + mpy + py / 4) / 3;
@@ -370,7 +375,7 @@ public class EnemyType {
   }
 
   // Set the barrage of the BatteryType.
-  private void setBattery(float rank, int n, int barrageType, int barrageIntense, 
+  private void setBattery(float rank, int n, int barrageType, int barrageIntense,
 			  int idx, int ptnIdx, float slow, int mode) {
     BatteryType bt = batteryType[idx];
     BatteryType bt2 = batteryType[idx + 1];
@@ -429,7 +434,7 @@ public class EnemyType {
     fireInterval = 99999;
     firePeriod = 150 + rand.nextInt(40);
     if (rank < 10)
-      firePeriod /= (2 - rank * 0.1);
+      firePeriod = cast(int)(firePeriod / (2 - rank * 0.1));
   }
 
   public void setMiddleEnemyType(float rank, int mode) {
@@ -457,6 +462,8 @@ public class EnemyType {
 	cr = 0;
 	sr = rank / 2;
 	break;
+      default:
+	break;
       }
     } else {
       switch (rand.nextInt(6)) {
@@ -472,6 +479,8 @@ public class EnemyType {
 	cr = 0;
 	sr = rank / 2;
 	break;
+      default:
+	break;
       }
     }
     setBarrageRank(br, cr, MORPHWEAK, mode);
@@ -482,15 +491,15 @@ public class EnemyType {
       shield = 40 + rand.nextInt(10);
       setBattery(sr, 1, BarrageManager.MIDDLESUB, NORMAL, 0, 0, 1, mode);
       fireInterval = 100 + rand.nextInt(60);
-      firePeriod = fireInterval / (1.8 + rand.nextFloat(0.7));
+      firePeriod = cast(int)(fireInterval / (1.8 + rand.nextFloat(0.7)));
     } else {
       shield = 30 + rand.nextInt(8);
       setBattery(sr, 1, BarrageManager.MIDDLESUB_LOCK, NORMAL, 0, 0, 1, mode);
       fireInterval = 72 + rand.nextInt(30);
-      firePeriod = fireInterval / (1.2 + rand.nextFloat(0.2));
+      firePeriod = cast(int)(fireInterval / (1.2 + rand.nextFloat(0.2)));
     }
     if (rank < 10)
-      firePeriod /= (2 - rank * 0.1);
+      firePeriod = cast(int)(firePeriod / (2 - rank * 0.1));
   }
 
   public void setLargeEnemyType(float rank, int mode) {
@@ -527,6 +536,8 @@ public class EnemyType {
 	sr1 = rank / 3 * 2;
 	sr2 = rank / 3 * 2;
 	break;
+      default:
+	break;
       }
     } else {
       switch (rand.nextInt(9)) {
@@ -554,6 +565,8 @@ public class EnemyType {
 	sr1 = rank / 3 * 2;
 	sr2 = rank / 3 * 2;
 	break;
+      default:
+	break;
       }
     }
     setBarrageRank(br, cr, WEAK, mode);
@@ -565,16 +578,16 @@ public class EnemyType {
       setBattery(sr1, 1, BarrageManager.MIDDLESUB, NORMAL, 0, 0, 1, mode);
       setBattery(sr2, 1, BarrageManager.MIDDLESUB, NORMAL, 2, 0, 1, mode);
       fireInterval = 150 + rand.nextInt(60);
-      firePeriod = fireInterval / (1.3 + rand.nextFloat(0.8));
+      firePeriod = cast(int)(fireInterval / (1.3 + rand.nextFloat(0.8)));
     } else {
       shield = 45 + rand.nextInt(8);
       setBattery(sr1, 1, BarrageManager.MIDDLESUB_LOCK, NORMAL, 0, 0, 1, mode);
       setBattery(sr2, 1, BarrageManager.MIDDLESUB_LOCK, NORMAL, 2, 0, 1, mode);
       fireInterval = 100 + rand.nextInt(50);
-      firePeriod = fireInterval / (1.2 + rand.nextFloat(0.2));
+      firePeriod = cast(int)(fireInterval / (1.2 + rand.nextFloat(0.2)));
     }
     if (rank < 10)
-      firePeriod /= (2 - rank * 0.1);
+      firePeriod = cast(int)(firePeriod / (2 - rank * 0.1));
   }
 
   public void setMiddleBossEnemyType(float rank, int mode) {
@@ -600,6 +613,8 @@ public class EnemyType {
 	cr = 0;
 	sr = rank;
 	break;
+      default:
+	break;
       }
       setBarrageRankSlow(br, cr, NORMAL, mode, 0.9);
       setBarrageShape(br, 0.9);
@@ -609,9 +624,9 @@ public class EnemyType {
     }
     shield = 300 + rand.nextInt(50);
     fireInterval = 200 + rand.nextInt(40);
-    firePeriod = fireInterval / (1.2 + rand.nextFloat(0.4));
+    firePeriod = cast(int)(fireInterval / (1.2 + rand.nextFloat(0.4)));
     if (rank < 10)
-      firePeriod /= (2 - rank * 0.1);
+      firePeriod = cast(int)(firePeriod / (2 - rank * 0.1));
   }
 
   public void setLargeBossEnemyType(float rank, int mode) {
@@ -640,6 +655,8 @@ public class EnemyType {
 	sr1 = 0;
 	sr2 = rank / 3;
 	break;
+      default:
+	break;
       }
       setBarrageRankSlow(br, cr, NORMAL, mode, 0.9);
       setBarrageShape(br, 1.0);
@@ -650,8 +667,8 @@ public class EnemyType {
     }
     shield = 400 + rand.nextInt(50);
     fireInterval = 220 + rand.nextInt(60);
-    firePeriod = fireInterval / (1.2 + rand.nextFloat(0.3));
+    firePeriod = cast(int)(fireInterval / (1.2 + rand.nextFloat(0.3)));
     if (rank < 10)
-      firePeriod /= (2 - rank * 0.1);
+      firePeriod = cast(int)(firePeriod / (2 - rank * 0.1));
   }
 }

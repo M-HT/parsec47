@@ -14,7 +14,6 @@ import abagames.util.Actor;
 import abagames.util.ActorInitializer;
 import abagames.util.sdl.Screen3D;
 import abagames.p47.LuminousActor;
-import abagames.p47.Field;
 import abagames.p47.P47Screen;
 
 /**
@@ -43,7 +42,7 @@ public class Fragment: LuminousActor {
   }
 
   public override void init(ActorInitializer ini) {
-    FragmentInitializer fi = (FragmentInitializer) ini;
+    FragmentInitializer fi = cast(FragmentInitializer) ini;
     for (int i = 0; i < POINT_NUM; i++) {
       pos[i] = new Vector;
       vel[i] = new Vector;

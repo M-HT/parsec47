@@ -7,6 +7,7 @@ module abagames.util.sdl.Pad;
 
 private:
 import std.string;
+import std.conv;
 import SDL;
 import abagames.util.sdl.Input;
 import abagames.util.sdl.SDLInitFailedException;
@@ -32,15 +33,15 @@ public class Pad: Input {
   public void openJoystick() {
     if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
       throw new SDLInitFailedException(
-	"Unable to init SDL joystick: " ~ std.string.toString(SDL_GetError()));
+	"Unable to init SDL joystick: " ~ to!string(SDL_GetError()));
     }
     stick = SDL_JoystickOpen(0);
   }
 
-  public void handleEvent(SDL_Event *event) {
+  public override void handleEvent(SDL_Event *event) {
     keys = SDL_GetKeyState(null);
   }
-  
+
   // Joystick and keyboard handler.
 
   public int getPadState() {

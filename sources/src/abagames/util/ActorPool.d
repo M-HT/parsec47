@@ -32,8 +32,8 @@ public class ActorPool {
     for (int i = 0; i < actor.length; i++) {
       actorIdx--;
       if (actorIdx < 0)
-	actorIdx = actor.length - 1;
-      if (!actor[actorIdx].isExist) 
+	actorIdx = cast(int)(actor.length - 1);
+      if (!actor[actorIdx].isExist)
 	return actor[actorIdx];
     }
     return null;
@@ -42,7 +42,7 @@ public class ActorPool {
   public Actor getInstanceForced() {
     actorIdx--;
     if (actorIdx < 0)
-      actorIdx = actor.length - 1;
+      actorIdx = cast(int)(actor.length - 1);
     return actor[actorIdx];
   }
 

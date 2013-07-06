@@ -20,18 +20,21 @@
     slouken@devolution.com
 */
 
-import SDL_types;
-import SDL_getenv;
-import SDL_error;
-import SDL_rwops;
-import SDL_timer;
-import SDL_audio;
-import SDL_cdrom;
-import SDL_joystick;
-import SDL_events;
-import SDL_video;
-import SDL_byteorder;
-import SDL_version;
+public
+{
+    import SDL_types;
+    import SDL_getenv;
+    import SDL_error;
+    import SDL_rwops;
+    import SDL_timer;
+    import SDL_audio;
+    import SDL_cdrom;
+    import SDL_joystick;
+    import SDL_events;
+    import SDL_video;
+    import SDL_byteorder;
+    import SDL_version;
+}
 
 extern(C):
 
@@ -49,7 +52,7 @@ const uint SDL_INIT_NOPARACHUTE	= 0x00100000;	/* Don't catch fatal signals */
 const uint SDL_INIT_EVENTTHREAD	= 0x01000000;	/* Not supported on all OS's */
 const uint SDL_INIT_EVERYTHING	= 0x0000FFFF;
 
-/* This function loads the SDL dynamically linked library and initializes 
+/* This function loads the SDL dynamically linked library and initializes
  * the subsystems specified by 'flags' (and those satisfying dependencies)
  * Unless the SDL_INIT_NOPARACHUTE flag is set, it will install cleanup
  * signal handlers for some commonly ignored fatal signals (like SIGSEGV)
@@ -73,15 +76,19 @@ Uint32 SDL_WasInit(Uint32 flags);
  */
 void SDL_Quit();
 
-void SDL_SetModuleHandle(void *hInst);
-extern(Windows) void* GetModuleHandle(char*);
+version (Win32) {
+    void SDL_SetModuleHandle(void *hInst);
+    extern(Windows) void* GetModuleHandle(const char *);
+}
 
 static this()
 {
 	/* Load SDL dynamic link library */
 	if (SDL_Init(SDL_INIT_NOPARACHUTE) < 0)
 		throw new Error("Error loading SDL");
-	SDL_SetModuleHandle(GetModuleHandle(null));
+	version (Win32) {
+		SDL_SetModuleHandle(GetModuleHandle(null));
+	}
 }
 
 static ~this()

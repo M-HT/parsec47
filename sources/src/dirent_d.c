@@ -10,7 +10,7 @@ typedef struct {
 	char* prev;
 } DIR;
 
-DIR* opendir(char* dir) {
+DIR* opendir(const char* dir) {
 	WIN32_FIND_DATA fd;
 	HANDLE h;
 	DIR* d;

@@ -7,6 +7,7 @@ module abagames.p47.P47Boot;
 
 private:
 import std.string;
+import std.conv;
 import std.c.stdlib;
 import abagames.util.Logger;
 import abagames.util.sdl.Pad;
@@ -28,12 +29,12 @@ P47GameManager gameManager;
 P47PrefManager prefManager;
 MainLoop mainLoop;
 
-private void usage(char[] args0) {
+private void usage(string args0) {
   Logger.error
     ("Usage: " ~ args0 ~ " [-brightness [0-100]] [-luminous [0-100]] [-nosound] [-window] [-reverse] [-lowres] [-slowship] [-nowait]");
 }
 
-private void parseArgs(char[][] args) {
+private void parseArgs(string[] args) {
   for (int i = 1; i < args.length; i++) {
     switch (args[i]) {
     case "-brightness":
@@ -42,7 +43,7 @@ private void parseArgs(char[][] args) {
 	throw new Exception("Invalid options");
       }
       i++;
-      float b = (float) atoi(args[i]) / 100;
+      float b = cast(float) to!int(args[i]) / 100;
       if (b < 0 || b > 1) {
 	usage(args[0]);
 	throw new Exception("Invalid options");
@@ -55,7 +56,7 @@ private void parseArgs(char[][] args) {
 	throw new Exception("Invalid options");
       }
       i++;
-      float l = (float) atoi(args[i]) / 100;
+      float l = cast(float) to!int(args[i]) / 100;
       if (l < 0 || l > 1) {
 	usage(args[0]);
 	throw new Exception("Invalid options");
@@ -90,7 +91,7 @@ private void parseArgs(char[][] args) {
   }
 }
 
-public int boot(char[][] args) {
+public int boot(string[] args) {
   screen = new P47Screen;
   pad = new Pad;
   try {
@@ -125,16 +126,16 @@ public int WinMain(HINSTANCE hInstance,
 	    LPSTR lpCmdLine,
 	    int nCmdShow) {
   int result;
-  
+
   gc_init();
   _minit();
   try {
     _moduleCtor();
     char exe[4096];
     GetModuleFileNameA(null, exe, 4096);
-    char[][1] prog;
-    prog[0] = std.string.toString(exe);
-    result = boot(prog ~ std.string.split(std.string.toString(lpCmdLine)));
+    string[1] prog;
+    prog[0] = to!string(exe);
+    result = boot(prog ~ std.string.split(to!string(lpCmdLine)));
   } catch (Object o) {
     //Logger.error("Exception: " ~ o.toString());
     Logger.info("Exception: " ~ o.toString());
@@ -147,7 +148,7 @@ public int WinMain(HINSTANCE hInstance,
 } else {
 
 // Boot as the general executable.
-public int main(char[][] args) {
+public int main(string[] args) {
   return boot(args);
 }
 

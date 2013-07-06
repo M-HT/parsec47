@@ -10,7 +10,6 @@ import std.math;
 import opengl;
 import abagames.util.Vector;
 import abagames.util.sdl.Screen3D;
-import abagames.p47.P47Screen;
 import abagames.p47.P47GameManager;
 
 /**
@@ -57,6 +56,8 @@ public class Field {
       g = 0.3;
       b = 0.6;
       break;
+    default:
+      break;
     }
   }
 
@@ -89,6 +90,8 @@ public class Field {
       aimYawYBase = 10;
       aimYawZBase = 30;
       break;
+    default:
+      break;
     }
   }
 
@@ -97,7 +100,7 @@ public class Field {
     float d = -RING_NUM * RING_ANGLE_INT / 2 + roll;
     for (int i = 0; i < RING_NUM; i++) {
       for (int j = 1; j < 8; j++) {
-	float sc = (float) j / 16 + 0.5;
+	float sc = cast(float) j / 16 + 0.5;
 	glPushMatrix();
 	glTranslatef(0, 0, z);
 	glRotatef(d, 1, 0, 0);
@@ -118,7 +121,7 @@ public class Field {
   }
 
   public bool checkHit(Vector p, float space) {
-    if (p.x < -size.x + space || p.x > size.x - space || 
+    if (p.x < -size.x + space || p.x > size.x - space ||
 	p.y < -size.y + space || p.y > size.y - space)
       return true;
     return false;
@@ -126,7 +129,7 @@ public class Field {
 
   private static const int RING_POS_NUM = 16;
   private static Vector ringPos[RING_POS_NUM];
-  private static const float RING_DEG = std.math.PI / 3 / ((float) (RING_POS_NUM / 2) + 0.5);
+  private static const float RING_DEG = std.math.PI / 3 / (cast(float) (RING_POS_NUM / 2) + 0.5);
   private static const float RING_RADIUS = 10;
   private static const float RING_SIZE = 0.5;
 
@@ -134,10 +137,10 @@ public class Field {
     glBegin(GL_LINE_STRIP);
     for (int i = 0; i <= RING_POS_NUM / 2 - 2; i++) {
       glVertex3f(ringPos[i].x, RING_SIZE, ringPos[i].y);
-    } 
+    }
     for (int i = RING_POS_NUM / 2 - 2; i >= 0; i--) {
       glVertex3f(ringPos[i].x, -RING_SIZE, ringPos[i].y);
-    } 
+    }
     glVertex3f(ringPos[0].x, RING_SIZE, ringPos[0].y);
     glEnd();
     glBegin(GL_LINE_STRIP);
@@ -150,16 +153,16 @@ public class Field {
     glBegin(GL_LINE_STRIP);
     for (int i = RING_POS_NUM / 2 + 1;  i <= RING_POS_NUM - 1; i++) {
       glVertex3f(ringPos[i].x, RING_SIZE, ringPos[i].y);
-    } 
+    }
     for (int i = RING_POS_NUM - 1; i >= RING_POS_NUM / 2 + 1; i--) {
       glVertex3f(ringPos[i].x, -RING_SIZE, ringPos[i].y);
-    } 
+    }
     glVertex3f(ringPos[RING_POS_NUM / 2 + 1].x, RING_SIZE, ringPos[RING_POS_NUM / 2 + 1].y);
     glEnd();
   }
 
   public static void createDisplayLists() {
-    float d = -RING_DEG * ((float) (RING_POS_NUM / 2) - 0.5);
+    float d = -RING_DEG * (cast(float) (RING_POS_NUM / 2) - 0.5);
     for (int i = 0; i < RING_POS_NUM; i++, d += RING_DEG) {
       ringPos[i] = new Vector;
       ringPos[i].x = sin(d) * RING_RADIUS;

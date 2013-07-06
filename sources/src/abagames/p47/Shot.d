@@ -35,7 +35,7 @@ public class Shot: Actor {
   }
 
   public override void init(ActorInitializer ini) {
-    ShotInitializer si = (ShotInitializer) ini;
+    ShotInitializer si = cast(ShotInitializer) ini;
     field = si.field;
     pos = new Vector;
     vel = new Vector;
@@ -72,7 +72,7 @@ public class Shot: Actor {
 public class ShotInitializer: ActorInitializer {
  public:
   Field field;
-  
+
   public this(Field field) {
     this.field = field;
   }

@@ -28,7 +28,7 @@ public class Lock: Actor {
   }
   int state;
   static const int LENGTH = 12;
-  Vector pos[LENGTH]; 
+  Vector pos[LENGTH];
   static const int NO_COLLISION_CNT = 8;
   int cnt;
   float lockMinY;
@@ -52,7 +52,7 @@ public class Lock: Actor {
   }
 
   public override void init(ActorInitializer ini) {
-    LockInitializer li = (LockInitializer) ini;
+    LockInitializer li = cast(LockInitializer) ini;
     ship = li.ship;
     field = li.field;
     manager = li.manager;
@@ -66,7 +66,7 @@ public class Lock: Actor {
   private void reset() {
     for (int i = 0; i < LENGTH; i++) {
       pos[i].x = ship.pos.x;
-      pos[i].y = ship.pos.y; 
+      pos[i].y = ship.pos.y;
     }
     vel.x = rand.nextSignedFloat(1.5);
     vel.y = -2;
@@ -99,7 +99,7 @@ public class Lock: Actor {
     }
     if (state != HIT && state != CANCELED) {
       if (lockedPart < 0) {
-	lockedPos.x = lockedEnemy.pos.x; 
+	lockedPos.x = lockedEnemy.pos.x;
 	lockedPos.y = lockedEnemy.pos.y;
       } else {
 	lockedPos.x = lockedEnemy.pos.x + lockedEnemy.type.batteryType[lockedPart].collisionPos.x;
@@ -119,8 +119,8 @@ public class Lock: Actor {
 	state = FIRED;
     case FIRED:
     case CANCELED:
-      if (state != CANCELED) { 
-	if (!lockedEnemy.isExist || 
+      if (state != CANCELED) {
+	if (!lockedEnemy.isExist ||
 	    lockedEnemy.shield <= 0 ||
 	    (lockedPart >= 0 && lockedEnemy.battery[lockedPart].shield <= 0) ) {
 	  state = CANCELED;
@@ -133,7 +133,7 @@ public class Lock: Actor {
 	pos[0].x += (lockedPos.x - pos[0].x) * 0.002 * cnt;
 	pos[0].y += (lockedPos.y - pos[0].y) * 0.002 * cnt;
       } else {
-	vel.y += (field.size.y * 2 - pos[0].y) * SPEED; 
+	vel.y += (field.size.y * 2 - pos[0].y) * SPEED;
       }
       for (int i = LENGTH - 1; i > 0; i--) {
 	pos[i].x = pos[i-1].x;
@@ -151,7 +151,7 @@ public class Lock: Actor {
 	  reset();
 	}
       }
-      float d = atan2(pos[1].x - pos[0].x, pos[1].y - pos[0].y); 
+      float d = atan2(pos[1].x - pos[0].x, pos[1].y - pos[0].y);
       manager.addParticle(pos[0], d, 0, SPEED * 32);
       break;
     case HIT:
@@ -170,6 +170,8 @@ public class Lock: Actor {
 	}
       }
       break;
+    default:
+      break;
     }
     cnt++;
   }
@@ -182,8 +184,8 @@ public class Lock: Actor {
       float r = (LOCK_CNT - cnt) * 0.5 + 0.8;
       P47Screen.setRetroParam((LOCK_CNT - cnt) / LOCK_CNT, 0.2);
       for (int i = 0; i < 3; i++, d += 6.28 / 3) {
-	P47Screen.drawBoxRetro(lockedPos.x + sin(d) * r, 
-			       y + cos(d) * r, 
+	P47Screen.drawBoxRetro(lockedPos.x + sin(d) * r,
+			       y + cos(d) * r,
 			       0.2, 1, d + 3.14 / 2);
       }
       break;
@@ -195,8 +197,8 @@ public class Lock: Actor {
       float r = 0.8;
       P47Screen.setRetroParam(0, 0.2);
       for (int i = 0; i < 3; i++, d += 6.28 / 3) {
-	P47Screen.drawBoxRetro(lockedPos.x + sin(d) * r, 
-			       lockedPos.y + cos(d) * r, 
+	P47Screen.drawBoxRetro(lockedPos.x + sin(d) * r,
+			       lockedPos.y + cos(d) * r,
 			       0.2, 1, d + 3.14 / 2);
       }
       r = cnt * 0.1;
@@ -209,6 +211,8 @@ public class Lock: Actor {
 	P47Screen.setRetroParam(rr, 0.33);
 	P47Screen.drawLineRetro(pos[i].x, pos[i].y, pos[i + 1].x, pos[i + 1].y);
       }
+    default:
+      break;
     }
   }
 }

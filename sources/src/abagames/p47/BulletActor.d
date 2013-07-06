@@ -59,7 +59,7 @@ public class BulletActor: Actor {
   }
 
   public override void init(ActorInitializer ini) {
-    BulletActorInitializer bi = (BulletActorInitializer) ini;
+    BulletActorInitializer bi = cast(BulletActorInitializer) ini;
     field = bi.field;
     ship = bi.ship;
     bullet = new P47Bullet(nextId);
@@ -80,8 +80,8 @@ public class BulletActor: Actor {
     backToRetro = false;
   }
 
-  public void set(BulletMLRunner* runner, 
-		  float x, float y, float deg, float speed, float rank, 
+  public void set(BulletMLRunner* runner,
+		  float x, float y, float deg, float speed, float rank,
 		  float speedRank, int shape, int color, float size, float xReverse) {
     bullet.set(runner, x, y, deg, speed, rank);
     bullet.isMorph = false;
@@ -89,8 +89,8 @@ public class BulletActor: Actor {
     start(speedRank, shape, color, size, xReverse);
   }
 
-  public void set(BulletMLRunner* runner, 
-		  float x, float y, float deg, float speed, float rank, 
+  public void set(BulletMLRunner* runner,
+		  float x, float y, float deg, float speed, float rank,
 		  float speedRank, int shape, int color, float size, float xReverse,
 		  BulletMLParser *morph[], int morphNum, int morphIdx, int morphCnt) {
     bullet.set(runner, x, y, deg, speed, rank);
@@ -163,8 +163,8 @@ public class BulletActor: Actor {
 	if (hd >= 0 && hd <= SHIP_HIT_WIDTH) {
 	  ship.destroyed();
 	}
-      } 
-    }   
+      }
+    }
   }
 
   public override void move() {
@@ -200,9 +200,9 @@ public class BulletActor: Actor {
       if (cnt > BULLET_DISAPPEAR_CNT)
 	toRetro();
     }
-    bullet.pos.x += 
+    bullet.pos.x +=
       (sin(bullet.deg) * bullet.speed + bullet.acc.x) * sr * bullet.xReverse;
-    bullet.pos.y += 
+    bullet.pos.y +=
       (cos(bullet.deg) * bullet.speed - bullet.acc.y) * sr;
     if (isVisible) {
       totalBulletsSpeed += bullet.speed * sr;
@@ -231,8 +231,8 @@ public class BulletActor: Actor {
   private void drawRetro(float d) {
     float rt = 1 - rtCnt / RETRO_CNT;
     P47Screen.setRetroParam(rt, 0.4 * bullet.bulletSize);
-    P47Screen.setRetroColor(bulletColor[bullet.color][0], 
-			    bulletColor[bullet.color][1], 
+    P47Screen.setRetroColor(bulletColor[bullet.color][0],
+			    bulletColor[bullet.color][1],
 			    bulletColor[bullet.color][2], 1);
     float x, y, tx, px, py, fx, fy;
     for (int i = 0; i < shapePos[bullet.shape].length; i++) {
@@ -272,6 +272,8 @@ public class BulletActor: Actor {
     case 6:
       d = cnt * 0.08;
       break;
+    default:
+      break;
     }
     glPushMatrix();
     glTranslatef(bullet.pos.x, bullet.pos.y, 0);
@@ -291,9 +293,9 @@ public class BulletActor: Actor {
   private static const float SHAPE_BASE_COLOR_R = 1;
   private static const float SHAPE_BASE_COLOR_G = 0.9;
   private static const float SHAPE_BASE_COLOR_B = 0.7;
-  private static const float bulletColor[BULLET_COLOR_NUM][3] = 
+  private static const float bulletColor[BULLET_COLOR_NUM][3] =
     [
-     [1, 0, 0], [0.2, 1, 0.4], [0.3, 0.3, 1], [1, 1, 0], 
+     [1, 0, 0], [0.2, 1, 0.4], [0.3, 0.3, 1], [1, 1, 0],
      ];
 
   public static void createDisplayLists() {
@@ -460,6 +462,8 @@ public class BulletActor: Actor {
 	  glVertex3f(  0,  sz,  0);
 	  glVertex3f(-sz,   0,  0);
 	  glEnd();
+	  break;
+    default:
 	  break;
 	}
 	glEndList();

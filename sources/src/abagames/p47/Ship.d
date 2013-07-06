@@ -58,7 +58,7 @@ public class Ship {
   int rollLockCnt;
   bool rollCharged;
 
-  public static this() {
+  public static void initRand() {
     rand = new Rand;
   }
 
@@ -197,6 +197,8 @@ public class Ship {
 	firePos.x = pos.x - TURRET_INTERVAL_LENGTH;
 	firePos.y = pos.y;
 	td = - fireWideDeg * (fireCnt / 4 % 5) * 0.2;
+	break;
+      default:
 	break;
       }
       manager.addShot(firePos, td);
