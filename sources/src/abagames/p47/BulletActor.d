@@ -7,7 +7,11 @@ module abagames.p47.BulletActor;
 
 private:
 import std.math;
-import opengl;
+version (USE_GLES) {
+  import opengles;
+} else {
+  import opengl;
+}
 import bulletml;
 import abagames.util.Actor;
 import abagames.util.ActorInitializer;
@@ -33,7 +37,6 @@ public class BulletActor: Actor {
   Field field;
   Ship ship;
   static int nextId;
-  static int displayListIdx;
   bool isSimple;
   bool isTop;
   bool isVisible;
@@ -278,11 +281,10 @@ public class BulletActor: Actor {
     glPushMatrix();
     glTranslatef(bullet.pos.x, bullet.pos.y, 0);
     if (rtCnt >= RETRO_CNT) {
-      int di = displayListIdx + bullet.color * (BULLET_SHAPE_NUM + 1);
-      glCallList(di);
+      drawBox(bullet.color);
       glRotatef(rtod(d), 0, 0, 1);
       glScalef(bullet.bulletSize, bullet.bulletSize, 1);
-      glCallList(di + 1 + bullet.shape);
+      drawShape(bullet.color, bullet.shape);
     } else {
       drawRetro(d);
     }
@@ -297,184 +299,275 @@ public class BulletActor: Actor {
     [
      [1, 0, 0], [0.2, 1, 0.4], [0.3, 0.3, 1], [1, 1, 0],
      ];
+  private static const boxNumVertices = 4;
+  private static const GLfloat[3*boxNumVertices] boxVertices = [
+    -SHAPE_POINT_SIZE, -SHAPE_POINT_SIZE, 0,
+     SHAPE_POINT_SIZE, -SHAPE_POINT_SIZE, 0,
+     SHAPE_POINT_SIZE,  SHAPE_POINT_SIZE, 0,
+    -SHAPE_POINT_SIZE,  SHAPE_POINT_SIZE, 0
+  ];
+  private static GLfloat[4*boxNumVertices][BULLET_COLOR_NUM] boxColors;
+  private static GLenum[BULLET_SHAPE_NUM] shapeDrawMode;
+  private static GLfloat[][2][BULLET_SHAPE_NUM] shapeVertices;
+  private static GLfloat[][2][BULLET_SHAPE_NUM][BULLET_COLOR_NUM] shapeColors;
 
-  public static void createDisplayLists() {
-    int idx = 0;
+  private static void drawBox(int color) {
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+
+    glVertexPointer(3, GL_FLOAT, 0, cast(void *)(boxVertices.ptr));
+    glColorPointer(4, GL_FLOAT, 0, cast(void *)(boxColors[color].ptr));
+    glDrawArrays(GL_TRIANGLE_FAN, 0, boxNumVertices);
+
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
+  }
+
+  private static void drawShape(int color, int shape) {
+    const int shapeNumVertices = cast(int)(shapeColors[color][shape][0].length / 4);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+
+    glDisable(GL_BLEND);
+    glVertexPointer(3, GL_FLOAT, 0, cast(void *)(shapeVertices[shape][0].ptr));
+    glColorPointer(4, GL_FLOAT, 0, cast(void *)(shapeColors[color][shape][0].ptr));
+    glDrawArrays(shapeDrawMode[shape], 0, shapeNumVertices);
+    glEnable(GL_BLEND);
+
+    glVertexPointer(3, GL_FLOAT, 0, cast(void *)(shapeVertices[shape][1].ptr));
+    glColorPointer(4, GL_FLOAT, 0, cast(void *)(shapeColors[color][shape][1].ptr));
+    glDrawArrays(GL_TRIANGLE_FAN, 0, shapeNumVertices);
+
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
+  }
+
+  public static void prepareBullets() {
     float r, g, b;
     GLfloat size = 1.0f, sz, sz2;
-    displayListIdx = glGenLists(BULLET_COLOR_NUM * (BULLET_SHAPE_NUM + 1));
-    for (int i = 0; i < BULLET_COLOR_NUM; i++) {
+
+    foreach (j; 0..BULLET_SHAPE_NUM) {
+      switch (j) {
+        case 0:
+          sz = size/2;
+          shapeVertices[j][0] = [
+            -sz, -sz,  0,
+             sz, -sz,  0,
+             0, size,  0
+          ];
+          shapeVertices[j][1] = shapeVertices[j][0];
+          break;
+        case 1:
+          sz = size/2;
+          shapeVertices[j][0] = [
+              0, -size,  0,
+             sz,     0,  0,
+              0,  size,  0,
+            -sz,     0,  0
+          ];
+          shapeVertices[j][1] = shapeVertices[j][0];
+          break;
+        case 2:
+          sz = size/4; sz2 = size/3*2;
+          shapeVertices[j][0] = [
+            -sz, -sz2,  0,
+             sz, -sz2,  0,
+             sz,  sz2,  0,
+            -sz,  sz2,  0
+          ];
+          shapeVertices[j][1] = shapeVertices[j][0];
+          break;
+        case 3:
+          sz = size/2;
+          shapeVertices[j][0] = [
+            -sz, -sz,  0,
+             sz, -sz,  0,
+             sz,  sz,  0,
+            -sz,  sz,  0
+          ];
+          shapeVertices[j][1] = shapeVertices[j][0];
+          break;
+        case 4:
+          sz = size/2;
+          shapeVertices[j][0] = [
+            -sz/2, -sz,  0,
+             sz/2, -sz,  0,
+             sz,  -sz/2,  0,
+             sz,   sz/2,  0,
+             sz/2,  sz,  0,
+            -sz/2,  sz,  0,
+            -sz,   sz/2,  0,
+            -sz,  -sz/2,  0
+          ];
+          shapeVertices[j][1] = shapeVertices[j][0];
+          break;
+        case 5:
+          sz = size*2/3; sz2 = size/5;
+          shapeVertices[j][0] = [
+            -sz, -sz+sz2,  0,
+             0, sz+sz2,  0,
+             sz, -sz+sz2,  0
+          ];
+          shapeVertices[j][1] = [
+            -sz, -sz+sz2,  0,
+             sz, -sz+sz2,  0,
+             0, sz+sz2,  0
+          ];
+          break;
+        case 6:
+          sz = size/2;
+          shapeVertices[j][0] = [
+            -sz, -sz,  0,
+              0, -sz,  0,
+             sz,   0,  0,
+             sz,  sz,  0,
+              0,  sz,  0,
+            -sz,   0,  0
+          ];
+          shapeVertices[j][1] = shapeVertices[j][0];
+          break;
+        default:
+          break;
+      }
+    }
+
+    foreach (i; 0..BULLET_COLOR_NUM) {
       r = bulletColor[i][0];
       g = bulletColor[i][1];
       b = bulletColor[i][2];
       r += (1 - r) * 0.5;
       g += (1 - g) * 0.5;
       b += (1 - b) * 0.5;
-      for (int j = 0; j < BULLET_SHAPE_NUM + 1; j++) {
-	glNewList(displayListIdx + idx, GL_COMPILE);
-	Screen3D.setColor(r, g, b, 1);
-	switch (j) {
-	case 0:
-	  glBegin(GL_TRIANGLE_FAN);
-	  glVertex3f(-SHAPE_POINT_SIZE, -SHAPE_POINT_SIZE,  0);
-	  glVertex3f( SHAPE_POINT_SIZE, -SHAPE_POINT_SIZE,  0);
-	  glVertex3f( SHAPE_POINT_SIZE,  SHAPE_POINT_SIZE,  0);
-	  glVertex3f(-SHAPE_POINT_SIZE,  SHAPE_POINT_SIZE,  0);
-	  glEnd();
-	  break;
-	case 1:
-	  sz = size/2;
-	  glDisable(GL_BLEND);
-	  glBegin(GL_LINE_LOOP);
-	  glVertex3f(-sz, -sz,  0);
-	  glVertex3f( sz, -sz,  0);
-	  glVertex3f( 0, size,  0);
-	  glEnd();
-	  glEnable(GL_BLEND);
-	  Screen3D.setColor(r, g, b, 0.55);
-	  glBegin(GL_TRIANGLE_FAN);
-	  glVertex3f(-sz, -sz,  0);
-	  glVertex3f( sz, -sz,  0);
-	  Screen3D.setColor(SHAPE_BASE_COLOR_R, SHAPE_BASE_COLOR_G, SHAPE_BASE_COLOR_B, 0.55);
-	  glVertex3f( 0, size,  0);
-	  glEnd();
-	  break;
-	case 2:
-	  sz = size/2;
-	  glDisable(GL_BLEND);
-	  glBegin(GL_LINE_LOOP);
-	  glVertex3f(  0, -size,  0);
-	  glVertex3f( sz,     0,  0);
-	  glVertex3f(  0,  size,  0);
-	  glVertex3f(-sz,     0,  0);
-	  glEnd();
-	  glEnable(GL_BLEND);
-	  Screen3D.setColor(r, g, b, 0.7);
-	  glBegin(GL_TRIANGLE_FAN);
-	  glVertex3f(  0, -size,  0);
-	  glVertex3f( sz,     0,  0);
-	  Screen3D.setColor(SHAPE_BASE_COLOR_R, SHAPE_BASE_COLOR_G, SHAPE_BASE_COLOR_B, 0.55);
-	  glVertex3f(  0,  size,  0);
-	  glVertex3f(-sz,     0,  0);
-	  glEnd();
-	  break;
-	case 3:
-	  sz = size/4; sz2 = size/3*2;
-	  glDisable(GL_BLEND);
-	  glBegin(GL_LINE_LOOP);
-	  glVertex3f(-sz, -sz2,  0);
-	  glVertex3f( sz, -sz2,  0);
-	  glVertex3f( sz,  sz2,  0);
-	  glVertex3f(-sz,  sz2,  0);
-	  glEnd();
-	  glEnable(GL_BLEND);
-	  Screen3D.setColor(r, g, b, 0.45);
-	  glBegin(GL_TRIANGLE_FAN);
-	  glVertex3f(-sz, -sz2,  0);
-	  glVertex3f( sz, -sz2,  0);
-	  Screen3D.setColor(SHAPE_BASE_COLOR_R, SHAPE_BASE_COLOR_G, SHAPE_BASE_COLOR_B, 0.55);
-	  glVertex3f( sz, sz2,  0);
-	  glVertex3f(-sz, sz2,  0);
-	  glEnd();
-	  break;
-	case 4:
-	  sz = size/2;
-	  glDisable(GL_BLEND);
-	  glBegin(GL_LINE_LOOP);
-	  glVertex3f(-sz, -sz,  0);
-	  glVertex3f( sz, -sz,  0);
-	  glVertex3f( sz,  sz,  0);
-	  glVertex3f(-sz,  sz,  0);
-	  glEnd();
-	  glEnable(GL_BLEND);
-	  Screen3D.setColor(r, g, b, 0.7);
-	  glBegin(GL_TRIANGLE_FAN);
-	  glVertex3f(-sz, -sz,  0);
-	  glVertex3f( sz, -sz,  0);
-	  Screen3D.setColor(SHAPE_BASE_COLOR_R, SHAPE_BASE_COLOR_G, SHAPE_BASE_COLOR_B, 0.55);
-	  glVertex3f( sz,  sz,  0);
-	  glVertex3f(-sz,  sz,  0);
-	  glEnd();
-	  break;
-	case 5:
-	  sz = size/2;
-	  glDisable(GL_BLEND);
-	  glBegin(GL_LINE_LOOP);
-	  glVertex3f(-sz/2, -sz,  0);
-	  glVertex3f( sz/2, -sz,  0);
-	  glVertex3f( sz,  -sz/2,  0);
-	  glVertex3f( sz,   sz/2,  0);
-	  glVertex3f( sz/2,  sz,  0);
-	  glVertex3f(-sz/2,  sz,  0);
-	  glVertex3f(-sz,   sz/2,  0);
-	  glVertex3f(-sz,  -sz/2,  0);
-	  glEnd();
-	  glEnable(GL_BLEND);
-	  Screen3D.setColor(r, g, b, 0.85);
-	  glBegin(GL_TRIANGLE_FAN);
-	  glVertex3f(-sz/2, -sz,  0);
-	  glVertex3f( sz/2, -sz,  0);
-	  glVertex3f( sz,  -sz/2,  0);
-	  glVertex3f( sz,   sz/2,  0);
-	  Screen3D.setColor(SHAPE_BASE_COLOR_R, SHAPE_BASE_COLOR_G, SHAPE_BASE_COLOR_B, 0.55);
-	  glVertex3f( sz/2,  sz,  0);
-	  glVertex3f(-sz/2,  sz,  0);
-	  glVertex3f(-sz,   sz/2,  0);
-	  glVertex3f(-sz,  -sz/2,  0);
-	  glEnd();
-	  break;
-	case 6:
-	  sz = size*2/3; sz2 = size/5;
-	  glDisable(GL_BLEND);
-	  glBegin(GL_LINE_STRIP);
-	  glVertex3f(-sz, -sz+sz2,  0);
-	  glVertex3f( 0, sz+sz2,  0);
-	  glVertex3f( sz, -sz+sz2,  0);
-	  glEnd();
-	  glEnable(GL_BLEND);
-	  Screen3D.setColor(r, g, b, 0.55);
-	  glBegin(GL_TRIANGLE_FAN);
-	  glVertex3f(-sz, -sz+sz2,  0);
-	  glVertex3f( sz, -sz+sz2,  0);
-	  Screen3D.setColor(SHAPE_BASE_COLOR_R, SHAPE_BASE_COLOR_G, SHAPE_BASE_COLOR_B, 0.55);
-	  glVertex3f( 0, sz+sz2,  0);
-	  glEnd();
-	  break;
-	case 7:
-	  sz = size/2;
-	  glDisable(GL_BLEND);
-	  glBegin(GL_LINE_LOOP);
-	  glVertex3f(-sz, -sz,  0);
-	  glVertex3f(  0, -sz,  0);
-	  glVertex3f( sz,   0,  0);
-	  glVertex3f( sz,  sz,  0);
-	  glVertex3f(  0,  sz,  0);
-	  glVertex3f(-sz,   0,  0);
-	  glEnd();
-	  glEnable(GL_BLEND);
-	  Screen3D.setColor(r, g, b, 0.85);
-	  glBegin(GL_TRIANGLE_FAN);
-	  glVertex3f(-sz, -sz,  0);
-	  glVertex3f(  0, -sz,  0);
-	  glVertex3f( sz,   0,  0);
-	  Screen3D.setColor(SHAPE_BASE_COLOR_R, SHAPE_BASE_COLOR_G, SHAPE_BASE_COLOR_B, 0.55);
-	  glVertex3f( sz,  sz,  0);
-	  glVertex3f(  0,  sz,  0);
-	  glVertex3f(-sz,   0,  0);
-	  glEnd();
-	  break;
-    default:
-	  break;
-	}
-	glEndList();
-	idx++;
+      foreach(k; 0..boxNumVertices) {
+        boxColors[i][k*4 + 0] = r * Screen3D.brightness;
+        boxColors[i][k*4 + 1] = g * Screen3D.brightness;
+        boxColors[i][k*4 + 2] = b * Screen3D.brightness;
+        boxColors[i][k*4 + 2] = 1;
+      }
+      foreach (j; 0..BULLET_SHAPE_NUM) {
+        const int shapeNumVertices = cast(int)(shapeVertices[j][0].length / 3);
+        shapeColors[i][j][0].length = 4*shapeNumVertices;
+        shapeColors[i][j][1].length = 4*shapeNumVertices;
+        foreach(k; 0..shapeNumVertices) {
+          shapeColors[i][j][0][k*4 + 0] = r * Screen3D.brightness;
+          shapeColors[i][j][0][k*4 + 1] = g * Screen3D.brightness;
+          shapeColors[i][j][0][k*4 + 2] = b * Screen3D.brightness;
+          shapeColors[i][j][0][k*4 + 2] = 1;
+        }
+        switch (j) {
+        case 0:
+          foreach(k; 0..shapeNumVertices) {
+            if (k < 2) {
+              shapeColors[i][j][1][k*4 + 0] = r * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 1] = g * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = b * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = 0.55;
+            } else {
+              shapeColors[i][j][1][k*4 + 0] = SHAPE_BASE_COLOR_R * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 1] = SHAPE_BASE_COLOR_G * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = SHAPE_BASE_COLOR_B * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = 0.55;
+            }
+          }
+          break;
+        case 1:
+          foreach(k; 0..shapeNumVertices) {
+            if (k < 2) {
+              shapeColors[i][j][1][k*4 + 0] = r * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 1] = g * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = b * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = 0.7;
+            } else {
+              shapeColors[i][j][1][k*4 + 0] = SHAPE_BASE_COLOR_R * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 1] = SHAPE_BASE_COLOR_G * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = SHAPE_BASE_COLOR_B * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = 0.55;
+            }
+          }
+          break;
+        case 2:
+          foreach(k; 0..shapeNumVertices) {
+            if (k < 2) {
+              shapeColors[i][j][1][k*4 + 0] = r * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 1] = g * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = b * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = 0.45;
+            } else {
+              shapeColors[i][j][1][k*4 + 0] = SHAPE_BASE_COLOR_R * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 1] = SHAPE_BASE_COLOR_G * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = SHAPE_BASE_COLOR_B * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = 0.55;
+            }
+          }
+          break;
+        case 3:
+          foreach(k; 0..shapeNumVertices) {
+            if (k < 2) {
+              shapeColors[i][j][1][k*4 + 0] = r * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 1] = g * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = b * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = 0.7;
+            } else {
+              shapeColors[i][j][1][k*4 + 0] = SHAPE_BASE_COLOR_R * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 1] = SHAPE_BASE_COLOR_G * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = SHAPE_BASE_COLOR_B * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = 0.55;
+            }
+          }
+          break;
+        case 4:
+          foreach(k; 0..shapeNumVertices) {
+            if (k < 4) {
+              shapeColors[i][j][1][k*4 + 0] = r * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 1] = g * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = b * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = 0.85;
+            } else {
+              shapeColors[i][j][1][k*4 + 0] = SHAPE_BASE_COLOR_R * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 1] = SHAPE_BASE_COLOR_G * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = SHAPE_BASE_COLOR_B * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = 0.55;
+            }
+          }
+          break;
+        case 5:
+          foreach(k; 0..shapeNumVertices) {
+            if (k < 2) {
+              shapeColors[i][j][1][k*4 + 0] = r * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 1] = g * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = b * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = 0.55;
+            } else {
+              shapeColors[i][j][1][k*4 + 0] = SHAPE_BASE_COLOR_R * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 1] = SHAPE_BASE_COLOR_G * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = SHAPE_BASE_COLOR_B * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = 0.55;
+            }
+          }
+          break;
+        case 6:
+          foreach(k; 0..shapeNumVertices) {
+            if (k < 3) {
+              shapeColors[i][j][1][k*4 + 0] = r * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 1] = g * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = b * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = 0.85;
+            } else {
+              shapeColors[i][j][1][k*4 + 0] = SHAPE_BASE_COLOR_R * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 1] = SHAPE_BASE_COLOR_G * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = SHAPE_BASE_COLOR_B * Screen3D.brightness;
+              shapeColors[i][j][1][k*4 + 2] = 0.55;
+            }
+          }
+          break;
+        default:
+          break;
+        }
       }
     }
   }
 
-  public static void deleteDisplayLists() {
-    glDeleteLists(displayListIdx, BULLET_COLOR_NUM * (BULLET_SHAPE_NUM + 1));
-  }
 }
 
 public class BulletActorInitializer: ActorInitializer {

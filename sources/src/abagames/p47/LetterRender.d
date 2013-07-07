@@ -6,7 +6,11 @@
 module abagames.p47.LetterRender;
 
 private:
-import opengl;
+version (USE_GLES) {
+  import opengles;
+} else {
+  import opengl;
+}
 import abagames.util.sdl.Screen3D;
 import abagames.p47.P47Screen;
 
@@ -14,17 +18,45 @@ import abagames.p47.P47Screen;
  * Letters' renderer.
  */
 public class LetterRender {
- public:
-  static int displayListIdx;
-  static int colorIdx = 0;
  private:
+  static int color = 0;
+  static const int LETTER_NUM = 42;
+  static const int boxNumVertices = 4;
+  static GLfloat[3*boxNumVertices][][LETTER_NUM] letterVertices;
+  static GLfloat[4*boxNumVertices][2][2] boxColors = [
+    [ // WHITE
+     [1, 1, 1, 0.5,
+      1, 1, 1, 0.5,
+      1, 1, 1, 0.5,
+      1, 1, 1, 0.5
+     ],
+     [1, 1, 1, 1  ,
+      1, 1, 1, 1  ,
+      1, 1, 1, 1  ,
+      1, 1, 1, 1
+     ]
+    ],
+    [ // RED
+     [1, 0.7, 0.7, 0.5,
+      1, 0.7, 0.7, 0.5,
+      1, 0.7, 0.7, 0.5,
+      1, 0.7, 0.7, 0.5
+     ],
+     [1, 0.7, 0.7, 1  ,
+      1, 0.7, 0.7, 1  ,
+      1, 0.7, 0.7, 1  ,
+      1, 0.7, 0.7, 1
+     ]
+    ]
+  ];
+
 
   public enum {
     WHITE, RED
   }
 
   public static void changeColor(int c) {
-    colorIdx = c * LETTER_NUM;
+    color = c;
   }
 
   private static void drawLetter(int n, float x, float y, float s, float d) {
@@ -32,7 +64,7 @@ public class LetterRender {
     glTranslatef(x, y, 0);
     glScalef(s, s, s);
     glRotatef(d, 0, 0, 1);
-    glCallList(displayListIdx + n + colorIdx);
+    drawLetter(n);
     glPopMatrix();
   }
 
@@ -173,15 +205,17 @@ public class LetterRender {
     }
     }*/
 
-  private static void drawBox(float x, float y, float width, float height,
-			      float r, float g, float b) {
-    Screen3D.setColor(r, g, b, 0.5);
-    P47Screen.drawBoxSolid(x - width, y - height, width * 2, height * 2);
-    Screen3D.setColor(r, g, b, 1);
-    P47Screen.drawBoxLine(x - width, y - height, width * 2, height * 2);
+  private static void prepareBox(int idx, float x, float y, float width, float height) {
+    ++letterVertices[idx].length;
+    letterVertices[idx][letterVertices[idx].length - 1] = [
+      x - width, y - height, 0,
+      x + width, y - height, 0,
+      x + width, y + height, 0,
+      x - width, y + height, 0
+    ];
   }
 
-  private static void drawLetter(int idx, float r, float g, float b) {
+  private static void prepareLetter(int idx) {
     float x, y, length, size, t;
     int deg;
     for (int i = 0;; i++) {
@@ -197,30 +231,43 @@ public class LetterRender {
       y = y;
       deg %= 180;
       if (deg <= 45 || deg > 135)
-	drawBox(x, y, size, length, r, g, b);
+	prepareBox(idx, x, y, size, length);
       else
-	drawBox(x, y, length, size, r, g, b);
+	prepareBox(idx, x, y, length, size);
     }
   }
 
-  private static const int LETTER_NUM = 42;
+  private static void drawLetter(int idx) {
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
 
-  public static void createDisplayLists() {
-    displayListIdx = glGenLists(LETTER_NUM * 2);
-    for (int i = 0; i < LETTER_NUM; i++) {
-      glNewList(displayListIdx + i, GL_COMPILE);
-      drawLetter(i, 1, 1, 1);
-      glEndList();
+    foreach (i; 0..letterVertices[idx].length) {
+      glVertexPointer(3, GL_FLOAT, 0, cast(void *)(letterVertices[idx][i].ptr));
+
+      glColorPointer(4, GL_FLOAT, 0, cast(void *)(boxColors[color][0].ptr));
+      glDrawArrays(GL_TRIANGLE_FAN, 0, boxNumVertices);
+      glColorPointer(4, GL_FLOAT, 0, cast(void *)(boxColors[color][1].ptr));
+      glDrawArrays(GL_LINE_LOOP, 0, boxNumVertices);
     }
-    for (int i = 0; i < LETTER_NUM; i++) {
-      glNewList(displayListIdx + LETTER_NUM + i, GL_COMPILE);
-      drawLetter(i, 1, 0.7, 0.7);
-      glEndList();
-    }
+
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
   }
 
-  public static void deleteDisplayLists() {
-    glDeleteLists(displayListIdx, LETTER_NUM * 2);
+  public static void prepareLetters() {
+    foreach (l; 0..LETTER_NUM) {
+        prepareLetter(l);
+    }
+
+    foreach (k; 0..2) {
+      foreach (j; 0..2) {
+        foreach (i; 0..boxNumVertices) {
+          boxColors[k][j][i*4 + 0] *= Screen3D.brightness;
+          boxColors[k][j][i*4 + 1] *= Screen3D.brightness;
+          boxColors[k][j][i*4 + 2] *= Screen3D.brightness;
+        }
+      }
+    }
   }
 
   private static float[5][16][] spData =

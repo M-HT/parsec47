@@ -9,7 +9,13 @@ private:
 import std.math;
 import std.string;
 import std.c.string;
-import opengl;
+version (USE_GLES) {
+  import opengles;
+  import opengles_fbo;
+  alias glOrthof glOrtho;
+} else {
+  import opengl;
+}
 import abagames.util.Rand;
 
 /**
@@ -24,6 +30,9 @@ public class LuminousScreen {
   int luminousTextureWidth = 64, luminousTextureHeight = 64;
   int screenWidth, screenHeight;
   float luminous;
+  version (USE_GLES) {
+    GLuint luminousFramebuffer;
+  }
 
   private void makeLuminousTexture() {
     uint *data = td.ptr;
@@ -31,10 +40,17 @@ public class LuminousScreen {
     memset(data, 0, luminousTextureWidth * luminousTextureHeight * 4 * uint.sizeof);
     glGenTextures(1, &luminousTexture);
     glBindTexture(GL_TEXTURE_2D, luminousTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, 4, luminousTextureWidth, luminousTextureHeight, 0,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, luminousTextureWidth, luminousTextureHeight, 0,
 		 GL_RGBA, GL_UNSIGNED_BYTE, data);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    version (USE_GLES) {
+      glGenFramebuffersOES(1, &luminousFramebuffer);
+      glBindFramebufferOES(GL_FRAMEBUFFER_OES, luminousFramebuffer);
+      glFramebufferTexture2DOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_TEXTURE_2D, luminousTexture, 0);
+      glClear(GL_COLOR_BUFFER_BIT);
+      glBindFramebufferOES(GL_FRAMEBUFFER_OES, 0);
+    }
   }
 
   public void init(float luminous, int width, int height) {
@@ -50,16 +66,27 @@ public class LuminousScreen {
 
   public void close() {
     glDeleteTextures(1, &luminousTexture);
+    version (USE_GLES) {
+      glDeleteFramebuffersOES(1, &luminousFramebuffer);
+    }
   }
 
   public void startRenderToTexture() {
+    version (USE_GLES) {
+      glBindFramebufferOES(GL_FRAMEBUFFER_OES, luminousFramebuffer);
+      glClear(GL_COLOR_BUFFER_BIT);
+    }
     glViewport(0, 0, luminousTextureWidth, luminousTextureHeight);
   }
 
   public void endRenderToTexture() {
-    glBindTexture(GL_TEXTURE_2D, luminousTexture);
-    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-		     0, 0, luminousTextureWidth, luminousTextureHeight, 0);
+    version (USE_GLES) {
+      glBindFramebufferOES(GL_FRAMEBUFFER_OES, 0);
+    } else {
+      glBindTexture(GL_TEXTURE_2D, luminousTexture);
+      glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+		       0, 0, luminousTextureWidth, luminousTextureHeight, 0);
+    }
     glViewport(0, 0, screenWidth, screenHeight);
   }
 
@@ -88,18 +115,40 @@ public class LuminousScreen {
     glBindTexture(GL_TEXTURE_2D, luminousTexture);
     viewOrtho();
     glColor4f(1, 0.8, 0.9, luminous);
-    glBegin(GL_QUADS);
-    for (int i = 0; i < 5; i++) {
-      glTexCoord2f(0, 1);
-      glVertex2f(0 + lmOfs[i][0] * lmOfsBs, 0 + lmOfs[i][1] * lmOfsBs);
-      glTexCoord2f(0, 0);
-      glVertex2f(0 + lmOfs[i][0] * lmOfsBs, screenHeight + lmOfs[i][1] * lmOfsBs);
-      glTexCoord2f(1, 0);
-      glVertex2f(screenWidth + lmOfs[i][0] * lmOfsBs, screenHeight + lmOfs[i][0] * lmOfsBs);
-      glTexCoord2f(1, 1);
-      glVertex2f(screenWidth + lmOfs[i][0] * lmOfsBs, 0 + lmOfs[i][0] * lmOfsBs);
+    {
+      static const GLfloat[2*4] luminousTexCoords = [
+        0, 1,
+        0, 0,
+        1, 0,
+        1, 1
+      ];
+      GLfloat[2*4] luminousVertices;
+
+      glEnableClientState(GL_VERTEX_ARRAY);
+      glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+      glVertexPointer(2, GL_FLOAT, 0, cast(void *)(luminousVertices.ptr));
+      glTexCoordPointer(2, GL_FLOAT, 0, cast(void *)(luminousTexCoords.ptr));
+
+      foreach (i; 0..5) {
+        luminousVertices[0] = 0 + lmOfs[i][0] * lmOfsBs;
+        luminousVertices[1] = 0 + lmOfs[i][1] * lmOfsBs;
+
+        luminousVertices[2] = 0 + lmOfs[i][0] * lmOfsBs;
+        luminousVertices[3] = screenHeight + lmOfs[i][1] * lmOfsBs;
+
+        luminousVertices[4] = screenWidth + lmOfs[i][0] * lmOfsBs;
+        luminousVertices[5] = screenHeight + lmOfs[i][0] * lmOfsBs;
+
+        luminousVertices[6] = screenWidth + lmOfs[i][0] * lmOfsBs;
+        luminousVertices[7] = 0 + lmOfs[i][0] * lmOfsBs;
+
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+      }
+
+      glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+      glDisableClientState(GL_VERTEX_ARRAY);
     }
-    glEnd();
     viewPerspective();
     glDisable(GL_TEXTURE_2D);
   }

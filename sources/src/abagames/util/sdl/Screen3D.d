@@ -9,7 +9,14 @@ private:
 import std.string;
 import std.conv;
 import SDL;
-import opengl;
+version (USE_GLES) {
+  import opengles;
+  import opengles_fbo;
+  import eglport;
+  alias glFrustumf glFrustum;
+} else {
+  import opengl;
+}
 import abagames.util.Logger;
 import abagames.util.sdl.Screen;
 import abagames.util.sdl.SDLInitFailedException;
@@ -44,14 +51,30 @@ public class Screen3D: Screen {
     }
     // Create an OpenGL screen.
     Uint32 videoFlags;
-    if (windowMode) {
-      videoFlags = SDL_OPENGL | SDL_RESIZABLE;
+    version (USE_GLES) {
+      videoFlags = SDL_SWSURFACE;
     } else {
-      videoFlags = SDL_OPENGL | SDL_FULLSCREEN;
-    } 
+      videoFlags = SDL_OPENGL;
+    }
+    if (windowMode) {
+      videoFlags |= SDL_RESIZABLE;
+    } else {
+      videoFlags |= SDL_FULLSCREEN;
+    }
     if (SDL_SetVideoMode(width, height, 0, videoFlags) == null) {
       throw new SDLInitFailedException
 	("Unable to create SDL screen: " ~ to!string(SDL_GetError()));
+    }
+    version (USE_GLES) {
+      if (EGL_Open(cast(ushort)width, cast(ushort)height) != 0) {
+        throw new SDLInitFailedException(
+	  "Unable to open EGL context");
+      }
+
+      if (!loadFBOExtension()) {
+        throw new SDLInitFailedException(
+	  "FBOs not supported");
+      }
     }
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     resized(width, height);
@@ -81,12 +104,19 @@ public class Screen3D: Screen {
 
   public override void closeSDL() {
     close();
+    version (USE_GLES) {
+      EGL_Close();
+    }
     SDL_ShowCursor(SDL_ENABLE);
   }
 
   public override void flip() {
     handleError();
-    SDL_GL_SwapBuffers();
+    version (USE_GLES) {
+      EGL_SwapBuffers();
+    } else {
+      SDL_GL_SwapBuffers();
+    }
   }
 
   public override void clear() {

@@ -7,7 +7,11 @@ module abagames.p47.P47GameManager;
 
 private:
 import std.math;
-import opengl;
+version (USE_GLES) {
+  import opengles;
+} else {
+  import opengl;
+}
 import SDL;
 import bulletml;
 import abagames.util.Rand;
@@ -26,6 +30,7 @@ import abagames.p47.Ship;
 import abagames.p47.Field;
 import abagames.p47.Enemy;
 import abagames.p47.EnemyType;
+import abagames.p47.LineDrawData;
 import abagames.p47.Particle;
 import abagames.p47.Fragment;
 import abagames.p47.BulletActor;
@@ -63,6 +68,8 @@ public class P47GameManager: GameManager {
   Field field;
   Ship ship;
   ActorPool enemies;
+  LineDrawData particleData;
+  LineDrawData fragmentData;
   LuminousActorPool particles;
   LuminousActorPool fragments;
   BulletActorPool bullets;
@@ -92,23 +99,25 @@ public class P47GameManager: GameManager {
     prefManager = cast(P47PrefManager) abstPrefManager;
     screen = cast(P47Screen) abstScreen;
     rand = new Rand;
-    Field.createDisplayLists();
+    Field.prepareField();
     field = new Field;
     field.init();
     Ship.initRand();
-    Ship.createDisplayLists();
+    Ship.prepareColors();
     ship = new Ship;
     ship.init(pad, field, this);
+    particleData = new LineDrawData;
     scope Particle particleClass = new Particle;
-    scope ParticleInitializer pi = new ParticleInitializer;
+    scope ParticleInitializer pi = new ParticleInitializer(particleData);
     particles = new LuminousActorPool(128, particleClass, pi);
+    fragmentData = new LineDrawData;
     scope Fragment fragmentClass = new Fragment;
-    scope FragmentInitializer fi = new FragmentInitializer;
+    scope FragmentInitializer fi = new FragmentInitializer(fragmentData);
     fragments = new LuminousActorPool(128, fragmentClass, fi);
-    BulletActor.createDisplayLists();
+    BulletActor.prepareBullets();
     scope BulletActorInitializer bi = new BulletActorInitializer(field, ship);
     bullets = new BulletActorPool(512, bi);
-    LetterRender.createDisplayLists();
+    LetterRender.prepareLetters();
     scope Shot shotClass = new Shot;
     scope ShotInitializer shi = new ShotInitializer(field);
     shots = new ActorPool(32, shotClass, shi);
@@ -147,10 +156,6 @@ public class P47GameManager: GameManager {
     barrageManager.unloadBulletMLs();
     title.close();
     SoundManager.close();
-    LetterRender.deleteDisplayLists();
-    Field.deleteDisplayLists();
-    Ship.deleteDisplayLists();
-    BulletActor.deleteDisplayLists();
   }
 
   public void addScore(int sc) {
@@ -507,9 +512,9 @@ public class P47GameManager: GameManager {
     bonuses.draw();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     Screen3D.setColor(Particle.R, Particle.G, Particle.B, 1);
-    glBegin(GL_LINES);
+    particleData.clearData();
     particles.draw();
-    glEnd();
+    particleData.draw();
     P47Screen.setRetroColor(Fragment.R, Fragment.G, Fragment.B, 1);
     fragments.draw();
     P47Screen.setRetroZ(0);
@@ -534,9 +539,9 @@ public class P47GameManager: GameManager {
   private void gameoverDraw() {
     field.draw();
     Screen3D.setColor(Particle.R, Particle.G, Particle.B, 1);
-    glBegin(GL_LINES);
+    particleData.clearData();
     particles.draw();
-    glEnd();
+    particleData.draw();
     P47Screen.setRetroColor(Fragment.R, Fragment.G, Fragment.B, 1);
     fragments.draw();
     P47Screen.setRetroZ(0);
@@ -545,30 +550,42 @@ public class P47GameManager: GameManager {
   }
 
   private void inGameDrawLuminous() {
-    glBegin(GL_LINES);
+    particleData.clearData();
     particles.drawLuminous();
+    particleData.drawLuminous();
+    fragmentData.clearData();
     fragments.drawLuminous();
-    glEnd();
+    fragmentData.drawLuminous();
   }
 
   private void titleDrawLuminous() {
   }
 
   private void gameoverDrawLuminous() {
-    glBegin(GL_LINES);
+    particleData.clearData();
     particles.drawLuminous();
+    particleData.drawLuminous();
+    fragmentData.clearData();
     fragments.drawLuminous();
-    glEnd();
+    fragmentData.drawLuminous();
   }
 
   private void drawBoard(int x, int y, int width, int height) {
     glColor4f(0, 0, 0, 1);
-    glBegin(GL_QUADS);
-    glVertex2f(x, y);
-    glVertex2f(x + width, y);
-    glVertex2f(x + width, y + height);
-    glVertex2f(x, y + height);
-    glEnd();
+    {
+      const int boardNumVertices = 4;
+      GLfloat[2*boardNumVertices] boardVertices = [
+        x, y,
+        x + width, y,
+        x + width, y + height,
+        x, y + height,
+      ];
+
+      glEnableClientState(GL_VERTEX_ARRAY);
+      glVertexPointer(2, GL_FLOAT, 0, cast(void *)(boardVertices.ptr));
+      glDrawArrays(GL_TRIANGLE_FAN, 0, boardNumVertices);
+      glDisableClientState(GL_VERTEX_ARRAY);
+    }
   }
 
   private void drawSideBoards() {

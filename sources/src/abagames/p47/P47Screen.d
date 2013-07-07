@@ -7,7 +7,12 @@ module abagames.p47.P47Screen;
 
 private:
 import std.math;
-import opengl;
+version (USE_GLES) {
+  import opengles;
+  alias glOrthof glOrtho;
+} else {
+  import opengl;
+}
 import abagames.util.Rand;
 import abagames.util.sdl.Screen3D;
 import abagames.p47.LuminousScreen;
@@ -117,16 +122,29 @@ public class P47Screen: Screen3D {
     }
     setColor(r, g, b, a);
     if (retro < 0.2f) {
-      glBegin(GL_LINES);
-      glVertex3f(x1, y1, retroZ);
-      glVertex3f(x2, y2, retroZ);
-      glEnd();
+      const int lineNumVertices = 2;
+      GLfloat[3*lineNumVertices] lineVertices = [
+        x1, y1, retroZ,
+        x2, y2, retroZ
+      ];
+
+      glEnableClientState(GL_VERTEX_ARRAY);
+      glVertexPointer(3, GL_FLOAT, 0, cast(void *)(lineVertices.ptr));
+      glDrawArrays(GL_LINES, 0, lineNumVertices);
+      glDisableClientState(GL_VERTEX_ARRAY);
     } else {
       float ds = retroSize * retro;
       float ds2 = ds / 2;
       float lx = std.math.fabs(x2 - x1);
       float ly = std.math.fabs(y2 - y1);
-      glBegin(GL_QUADS);
+      const int quadNumVertices = 4;
+      GLfloat[3*quadNumVertices] quadVertices;
+      quadVertices[0*3 + 2] = retroZ;
+      quadVertices[1*3 + 2] = retroZ;
+      quadVertices[2*3 + 2] = retroZ;
+      quadVertices[3*3 + 2] = retroZ;
+      glEnableClientState(GL_VERTEX_ARRAY);
+      glVertexPointer(3, GL_FLOAT, 0, cast(void *)(quadVertices.ptr));
       if (lx < ly) {
 	int n = cast(int)(ly / ds);
 	if (n > 0) {
@@ -145,10 +163,15 @@ public class P47Screen: Screen3D {
 	      x -= ds;
 	      xos += ds;
 	    }
-	    glVertex3f(x - ds2, y - ds2, retroZ);
-	    glVertex3f(x + ds2, y - ds2, retroZ);
-	    glVertex3f(x + ds2, y + ds2, retroZ);
-	    glVertex3f(x - ds2, y + ds2, retroZ);
+	    quadVertices[0*3 + 0] = x - ds2;
+	    quadVertices[1*3 + 0] = x + ds2;
+	    quadVertices[2*3 + 0] = x + ds2;
+	    quadVertices[3*3 + 0] = x - ds2;
+	    quadVertices[0*3 + 1] = y - ds2;
+	    quadVertices[1*3 + 1] = y - ds2;
+	    quadVertices[2*3 + 1] = y + ds2;
+	    quadVertices[3*3 + 1] = y + ds2;
+	    glDrawArrays(GL_TRIANGLE_FAN, 0, quadNumVertices);
 	  }
 	}
       } else {
@@ -169,14 +192,19 @@ public class P47Screen: Screen3D {
 	      y -= ds;
 	      yos += ds;
 	    }
-	    glVertex3f(x - ds2, y - ds2, retroZ);
-	    glVertex3f(x + ds2, y - ds2, retroZ);
-	    glVertex3f(x + ds2, y + ds2, retroZ);
-	    glVertex3f(x - ds2, y + ds2, retroZ);
+	    quadVertices[0*3 + 0] = x - ds2;
+	    quadVertices[1*3 + 0] = x + ds2;
+	    quadVertices[2*3 + 0] = x + ds2;
+	    quadVertices[3*3 + 0] = x - ds2;
+	    quadVertices[0*3 + 1] = y - ds2;
+	    quadVertices[1*3 + 1] = y - ds2;
+	    quadVertices[2*3 + 1] = y + ds2;
+	    quadVertices[3*3 + 1] = y + ds2;
+	    glDrawArrays(GL_TRIANGLE_FAN, 0, quadNumVertices);
 	  }
 	}
       }
-      glEnd();
+      glDisableClientState(GL_VERTEX_ARRAY);
     }
   }
 
@@ -193,20 +221,32 @@ public class P47Screen: Screen3D {
   }
 
   public static void drawBoxSolid(float x, float y, float width, float height) {
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(x, y, 0);
-    glVertex3f(x + width, y, 0);
-    glVertex3f(x + width, y + height, 0);
-    glVertex3f(x, y + height, 0);
-    glEnd();
+    const int boxNumVertices = 4;
+    GLfloat[3*boxNumVertices] boxVertices = [
+      x, y, 0,
+      x + width, y, 0,
+      x + width, y + height, 0,
+      x, y + height, 0
+    ];
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3, GL_FLOAT, 0, cast(void *)(boxVertices.ptr));
+    glDrawArrays(GL_TRIANGLE_FAN, 0, boxNumVertices);
+    glDisableClientState(GL_VERTEX_ARRAY);
   }
 
   public static void drawBoxLine(float x, float y, float width, float height) {
-    glBegin(GL_LINE_LOOP);
-    glVertex3f(x, y, 0);
-    glVertex3f(x + width, y, 0);
-    glVertex3f(x + width, y + height, 0);
-    glVertex3f(x, y + height, 0);
-    glEnd();
+    const int boxNumVertices = 4;
+    GLfloat[3*boxNumVertices] boxVertices = [
+      x, y, 0,
+      x + width, y, 0,
+      x + width, y + height, 0,
+      x, y + height, 0
+    ];
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3, GL_FLOAT, 0, cast(void *)(boxVertices.ptr));
+    glDrawArrays(GL_LINE_LOOP, 0, boxNumVertices);
+    glDisableClientState(GL_VERTEX_ARRAY);
   }
 }

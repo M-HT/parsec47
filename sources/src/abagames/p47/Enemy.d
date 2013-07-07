@@ -7,7 +7,11 @@ module abagames.p47.Enemy;
 
 private:
 import std.math;
-import opengl;
+version (USE_GLES) {
+  import opengles;
+} else {
+  import opengl;
+}
 import bulletml;
 import abagames.util.Vector;
 import abagames.util.Rand;
@@ -664,15 +668,30 @@ public class Enemy: Actor {
 			      pos.x + type.bodyShapePos[ni].x, pos.y + type.bodyShapePos[ni].y);
     }
     if (type.type != EnemyType.SMALL) {
-      glBegin(GL_TRIANGLE_FAN);
-      Screen3D.setColor(P47Screen.retroR, P47Screen.retroG, P47Screen.retroB, 0);
-      for (int i = 0; i < EnemyType.BODY_SHAPE_POINT_NUM; i++) {
-	if (i == 2)
-	  Screen3D.setColor
-	    (P47Screen.retroR, P47Screen.retroG, P47Screen.retroB, P47Screen.retroA);
-	glVertex3f(pos.x + type.bodyShapePos[i].x, pos.y + type.bodyShapePos[i].y, z);
+      const int bodyNumVertices = EnemyType.BODY_SHAPE_POINT_NUM;
+      GLfloat[3*bodyNumVertices] bodyVertices;
+      GLfloat[4*bodyNumVertices] bodyColors;
+
+      foreach (i; 0..bodyNumVertices) {
+        bodyVertices[i*3 + 0] = pos.x + type.bodyShapePos[i].x;
+        bodyVertices[i*3 + 1] = pos.y + type.bodyShapePos[i].y;
+        bodyVertices[i*3 + 2] = z;
+
+        bodyColors[i*4 + 0] = P47Screen.retroR * Screen3D.brightness;
+        bodyColors[i*4 + 1] = P47Screen.retroG * Screen3D.brightness;
+        bodyColors[i*4 + 2] = P47Screen.retroB * Screen3D.brightness;
+        bodyColors[i*4 + 3] = (i == 2)?P47Screen.retroA:0;
       }
-      glEnd();
+
+      glEnableClientState(GL_VERTEX_ARRAY);
+      glEnableClientState(GL_COLOR_ARRAY);
+
+      glVertexPointer(3, GL_FLOAT, 0, cast(void *)(bodyVertices.ptr));
+      glColorPointer(4, GL_FLOAT, 0, cast(void *)(bodyColors.ptr));
+      glDrawArrays(GL_TRIANGLE_FAN, 0, bodyNumVertices);
+
+      glDisableClientState(GL_COLOR_ARRAY);
+      glDisableClientState(GL_VERTEX_ARRAY);
     }
     for (int i = 0; i < type.batteryNum; i++) {
       BatteryType* bt = &(type.batteryType[i]);
@@ -698,16 +717,30 @@ public class Enemy: Actor {
 				  pos.x + bt.wingShapePos[ni].x, pos.y + bt.wingShapePos[ni].y);
 	}
 	if (type.type != EnemyType.SMALL) {
-	  glBegin(GL_TRIANGLE_FAN);
-	  Screen3D.setColor
-	    (P47Screen.retroR, P47Screen.retroG, P47Screen.retroB, P47Screen.retroA);
-	  for (int j = 0; j < BatteryType.WING_SHAPE_POINT_NUM; j++) {
-	    if (j == 2)
-	      Screen3D.setColor
-		(P47Screen.retroR, P47Screen.retroG, P47Screen.retroB, 0);
-	    glVertex3f(pos.x + bt.wingShapePos[j].x, pos.y + bt.wingShapePos[j].y, z);
+      const int wingNumVertices = BatteryType.WING_SHAPE_POINT_NUM;
+	  GLfloat[3*wingNumVertices] wingVertices;
+	  GLfloat[4*wingNumVertices] wingColors;
+
+	  foreach (j; 0..wingNumVertices) {
+	    wingVertices[j*3 + 0] = pos.x + bt.wingShapePos[j].x;
+	    wingVertices[j*3 + 1] = pos.y + bt.wingShapePos[j].y;
+	    wingVertices[j*3 + 2] = z;
+
+	    wingColors[j*4 + 0] = P47Screen.retroR * Screen3D.brightness;
+	    wingColors[j*4 + 1] = P47Screen.retroG * Screen3D.brightness;
+	    wingColors[j*4 + 2] = P47Screen.retroB * Screen3D.brightness;
+	    wingColors[j*4 + 3] = (j == 2)?P47Screen.retroA:0;
 	  }
-	  glEnd();
+
+	  glEnableClientState(GL_VERTEX_ARRAY);
+	  glEnableClientState(GL_COLOR_ARRAY);
+
+	  glVertexPointer(3, GL_FLOAT, 0, cast(void *)(wingVertices.ptr));
+	  glColorPointer(4, GL_FLOAT, 0, cast(void *)(wingColors.ptr));
+	  glDrawArrays(GL_TRIANGLE_FAN, 0, wingNumVertices);
+
+	  glDisableClientState(GL_COLOR_ARRAY);
+	  glDisableClientState(GL_VERTEX_ARRAY);
 	}
       }
     }

@@ -7,7 +7,11 @@ module abagames.p47.Ship;
 
 private:
 import std.math;
-import opengl;
+version (USE_GLES) {
+  import opengles;
+} else {
+  import opengl;
+}
 import abagames.util.Vector;
 import abagames.util.Rand;
 import abagames.util.sdl.Pad;
@@ -25,7 +29,6 @@ import abagames.p47.SoundManager;
 public class Ship {
  public:
   static bool isSlow = false;
-  static int displayListIdx;
   Vector pos;
   const float SIZE = 0.3;
   bool restart;
@@ -57,6 +60,65 @@ public class Ship {
   float fieldLimitX, fieldLimitY;
   int rollLockCnt;
   bool rollCharged;
+  static const int boxNumVertices = 4;
+  static const GLfloat[3*boxNumVertices][3] shipVertices = [
+    [ // first box
+      -0.1, -0.5, 0,
+       0.1, -0.5, 0,
+       0.1,  0.5, 0,
+      -0.1,  0.5, 0
+    ],
+    [ // second box
+      -0.2, -0.2, 0,
+       0.2, -0.2, 0,
+       0.2,  0.2, 0,
+      -0.2,  0.2, 0
+    ],
+    [ // third box
+      -0.15, -0.3, 0,
+       0.15, -0.3, 0,
+       0.15,  0.3, 0,
+      -0.15,  0.3, 0
+    ]
+  ];
+  static GLfloat[4*boxNumVertices][2][3] shipColors = [
+    [ // first box
+     [0.5, 1, 0.5, 0.2,
+      0.5, 1, 0.5, 0.2,
+      0.5, 1, 0.5, 0.2,
+      0.5, 1, 0.5, 0.2
+     ],
+     [0.5, 1, 0.5, 0.4,
+      0.5, 1, 0.5, 0.4,
+      0.5, 1, 0.5, 0.4,
+      0.5, 1, 0.5, 0.4
+     ]
+    ],
+    [ // second box
+     [1, 0.2, 0.2, 1,
+      1, 0.2, 0.2, 1,
+      1, 0.2, 0.2, 1,
+      1, 0.2, 0.2, 1
+     ],
+     [1, 0.5, 0.5, 1,
+      1, 0.5, 0.5, 1,
+      1, 0.5, 0.5, 1,
+      1, 0.5, 0.5, 1
+     ]
+    ],
+    [ // third box
+     [0.7, 1, 0.5, 0.3,
+      0.7, 1, 0.5, 0.3,
+      0.7, 1, 0.5, 0.3,
+      0.7, 1, 0.5, 0.3
+     ],
+     [0.7, 1, 0.5, 0.6,
+      0.7, 1, 0.5, 0.6,
+      0.7, 1, 0.5, 0.6,
+      0.7, 1, 0.5, 0.6
+     ]
+    ]
+  ];
 
   public static void initRand() {
     rand = new Rand;
@@ -215,24 +277,24 @@ public class Ship {
       return;
     glPushMatrix();
     glTranslatef(pos.x, pos.y, 0);
-    glCallList(displayListIdx + 1);
+    drawShip(1);
     glRotatef(bank, 0, 1, 0);
     glTranslatef(-0.5, 0, 0);
-    glCallList(displayListIdx);
+    drawShip(0);
     glTranslatef(0.2, 0.3, 0.2);
-    glCallList(displayListIdx);
+    drawShip(0);
     glTranslatef(0, 0, -0.4);
-    glCallList(displayListIdx);
+    drawShip(0);
     glPopMatrix();
     glPushMatrix();
     glTranslatef(pos.x, pos.y, 0);
     glRotatef(bank, 0, 1, 0);
     glTranslatef(0.5, 0, 0);
-    glCallList(displayListIdx);
+    drawShip(0);
     glTranslatef(-0.2, 0.3, 0.2);
-    glCallList(displayListIdx);
+    drawShip(0);
     glTranslatef(0, 0, -0.4);
-    glCallList(displayListIdx);
+    drawShip(0);
     glPopMatrix();
     for (int i = 0; i < 6; i++) {
       glPushMatrix();
@@ -241,7 +303,7 @@ public class Ship {
       glRotatef(180.0f / 2 - fireWideDeg * 100, 0, 0, 1);
       glRotatef(i * 180.0f / 3 - ttlCnt * 4, 1, 0, 0);
       glTranslatef(0, 0, 0.7);
-      glCallList(displayListIdx + 2);
+      drawShip(2);
       glPopMatrix();
       glPushMatrix();
       glTranslatef(pos.x + 0.7, pos.y - 0.3, 0);
@@ -249,34 +311,36 @@ public class Ship {
       glRotatef(-180.0f / 2 + fireWideDeg * 100, 0, 0, 1);
       glRotatef(i * 180.0f / 3 - ttlCnt * 4, 1, 0, 0);
       glTranslatef(0, 0, 0.7);
-      glCallList(displayListIdx + 2);
+      drawShip(2);
       glPopMatrix();
     }
   }
 
-  public static void createDisplayLists() {
-    displayListIdx = glGenLists(3);
-    glNewList(displayListIdx, GL_COMPILE);
-    Screen3D.setColor(0.5, 1, 0.5, 0.2);
-    P47Screen.drawBoxSolid(-0.1, -0.5, 0.2, 1);
-    Screen3D.setColor(0.5, 1, 0.5, 0.4);
-    P47Screen.drawBoxLine(-0.1, -0.5, 0.2, 1);
-    glEndList();
-    glNewList(displayListIdx + 1, GL_COMPILE);
-    Screen3D.setColor(1, 0.2, 0.2, 1);
-    P47Screen.drawBoxSolid(-0.2, -0.2, 0.4, 0.4);
-    Screen3D.setColor(1, 0.5, 0.5, 1);
-    P47Screen.drawBoxLine(-0.2, -0.2, 0.4, 0.4);
-    glEndList();
-    glNewList(displayListIdx + 2, GL_COMPILE);
-    Screen3D.setColor(0.7, 1, 0.5, 0.3);
-    P47Screen.drawBoxSolid(-0.15, -0.3, 0.3, 0.6);
-    Screen3D.setColor(0.7, 1, 0.5, 0.6);
-    P47Screen.drawBoxLine(-0.15, -0.3, 0.3, 0.6);
-    glEndList();
+  private static void drawShip(int idx) {
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+
+    glVertexPointer(3, GL_FLOAT, 0, cast(void *)(shipVertices[idx].ptr));
+
+    glColorPointer(4, GL_FLOAT, 0, cast(void *)(shipColors[idx][0].ptr));
+    glDrawArrays(GL_TRIANGLE_FAN, 0, boxNumVertices);
+    glColorPointer(4, GL_FLOAT, 0, cast(void *)(shipColors[idx][1].ptr));
+    glDrawArrays(GL_LINE_LOOP, 0, boxNumVertices);
+
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
   }
 
-  public static void deleteDisplayLists() {
-    glDeleteLists(displayListIdx, 3);
+  public static void prepareColors() {
+    foreach (k; 0..3) {
+      foreach (j; 0..2) {
+        foreach (i; 0..boxNumVertices) {
+          shipColors[k][j][i*4 + 0] *= Screen3D.brightness;
+          shipColors[k][j][i*4 + 1] *= Screen3D.brightness;
+          shipColors[k][j][i*4 + 2] *= Screen3D.brightness;
+        }
+      }
+    }
   }
+
 }

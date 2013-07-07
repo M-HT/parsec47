@@ -7,7 +7,11 @@ module abagames.p47.Fragment;
 
 private:
 import std.math;
-import opengl;
+version (USE_GLES) {
+  import opengles;
+} else {
+  import opengl;
+}
 import abagames.util.Vector;
 import abagames.util.Rand;
 import abagames.util.Actor;
@@ -15,6 +19,7 @@ import abagames.util.ActorInitializer;
 import abagames.util.sdl.Screen3D;
 import abagames.p47.LuminousActor;
 import abagames.p47.P47Screen;
+import abagames.p47.LineDrawData;
 
 /**
  * Enemys' fragments.
@@ -25,6 +30,7 @@ public class Fragment: LuminousActor {
  private:
   static Rand rand;
   static const int POINT_NUM = 2;
+  LineDrawData drawData;
   Vector pos[POINT_NUM];
   Vector vel[POINT_NUM];
   Vector impact;
@@ -43,6 +49,7 @@ public class Fragment: LuminousActor {
 
   public override void init(ActorInitializer ini) {
     FragmentInitializer fi = cast(FragmentInitializer) ini;
+    drawData = fi.drawData;
     for (int i = 0; i < POINT_NUM; i++) {
       pos[i] = new Vector;
       vel[i] = new Vector;
@@ -94,11 +101,23 @@ public class Fragment: LuminousActor {
 
   public override void drawLuminous() {
     if (lumAlp < 0.2) return;
-    Screen3D.setColor(R, G, B, lumAlp);
-    glVertex3f(pos[0].x, pos[0].y, z);
-    glVertex3f(pos[1].x, pos[1].y, z);
+
+    drawData.vertices ~= [
+      pos[0].x, pos[0].y, z,
+      pos[1].x, pos[1].y, z
+    ];
+    drawData.colors ~= [
+      R * Screen3D.brightness, G * Screen3D.brightness, B * Screen3D.brightness, lumAlp,
+      R * Screen3D.brightness, G * Screen3D.brightness, B * Screen3D.brightness, lumAlp
+    ];
   }
 }
 
 public class FragmentInitializer: ActorInitializer {
+ public:
+  LineDrawData drawData;
+
+  public this(LineDrawData drawData) {
+    this.drawData = drawData;
+  }
 }

@@ -6,7 +6,11 @@
 module abagames.p47.Title;
 
 private:
-import opengl;
+version (USE_GLES) {
+  import opengles;
+} else {
+  import opengl;
+}
 import abagames.util.sdl.Pad;
 import abagames.util.sdl.Screen3D;
 import abagames.util.sdl.Texture;
@@ -116,7 +120,7 @@ public class Title {
     if (boxCnt >= 0)
       boxCnt--;
   }
-  
+
   public void setStatus() {
     gameManager.difficulty = curY;
     gameManager.parsecSlot = curX;
@@ -161,26 +165,41 @@ public class Title {
     glEnable(GL_TEXTURE_2D);
     titleTexture.bind();
     P47Screen.setColor(1, 1, 1, 1);
-    glBegin(GL_TRIANGLE_FAN);
-    glTexCoord2f(0, 0);
-    glVertex3f(180, 20, 0);
-    glTexCoord2f(1, 0);
-    glVertex3f(308, 20, 0);
-    glTexCoord2f(1, 1);
-    glVertex3f(308, 148, 0);
-    glTexCoord2f(0, 1);
-    glVertex3f(180, 148, 0);
-    glEnd();
+    {
+      static const int titleNumVertices = 4;
+      static const GLfloat[3*titleNumVertices] titleVertices = [
+        180,  20,   0,
+        308,  20,   0,
+        308, 148,   0,
+        180, 148,   0
+      ];
+      static const GLfloat[2*titleNumVertices] titleTexCoords = [
+        0, 0,
+        1, 0,
+        1, 1,
+        0, 1
+      ];
+
+      glEnableClientState(GL_VERTEX_ARRAY);
+      glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+      glVertexPointer(3, GL_FLOAT, 0, cast(void *)(titleVertices.ptr));
+      glTexCoordPointer(2, GL_FLOAT, 0, cast(void *)(titleTexCoords.ptr));
+      glDrawArrays(GL_TRIANGLE_FAN, 0, titleNumVertices);
+
+      glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+      glDisableClientState(GL_VERTEX_ARRAY);
+    }
     glDisable(GL_TEXTURE_2D);
   }
 
   public void draw() {
     int sx, sy;
     LetterRender.drawString
-      (DIFFICULTY_STR[curY], 470 - DIFFICULTY_STR[curY].length * 14, 150, 
+      (DIFFICULTY_STR[curY], 470 - DIFFICULTY_STR[curY].length * 14, 150,
        10, LetterRender.TO_RIGHT);
     LetterRender.drawString
-      (MODE_STR[mode], 470 - MODE_STR[mode].length * 14, 450, 
+      (MODE_STR[mode], 470 - MODE_STR[mode].length * 14, 450,
        10, LetterRender.TO_RIGHT);
     if (curX > 0) {
       LetterRender.drawString("START AT PARSEC", 290, 180, 6, LetterRender.TO_RIGHT);

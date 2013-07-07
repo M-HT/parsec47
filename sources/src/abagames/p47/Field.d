@@ -7,7 +7,11 @@ module abagames.p47.Field;
 
 private:
 import std.math;
-import opengl;
+version (USE_GLES) {
+  import opengles;
+} else {
+  import opengl;
+}
 import abagames.util.Vector;
 import abagames.util.sdl.Screen3D;
 import abagames.p47.P47GameManager;
@@ -23,7 +27,6 @@ public class Field {
   float aimZ;
   float aimSpeed;
  private:
-  static int displayListIdx;
   static const int RING_NUM = 16;
   static const float RING_ANGLE_INT = 10;
   float roll, yaw;
@@ -107,7 +110,7 @@ public class Field {
 	glRotatef(sin(yaw / 180 * PI) * yawYBase, 0, 1, 0);
 	glRotatef(sin(yaw / 180 * PI) * yawZBase, 0, 0, 1);
 	glScalef(1, 1, sc);
-	glCallList(displayListIdx);
+	displayOneRing();
 	glPopMatrix();
       }
       d += RING_ANGLE_INT;
@@ -132,49 +135,92 @@ public class Field {
   private static const float RING_DEG = std.math.PI / 3 / (cast(float) (RING_POS_NUM / 2) + 0.5);
   private static const float RING_RADIUS = 10;
   private static const float RING_SIZE = 0.5;
+  private static const int ringNumVertices1 = 15; //1 + 2 * (RING_POS_NUM / 2 - 1);
+  private static const int ringNumVertices2 = 5;  //1 + 2 * (2);
+  private static const int ringNumVertices3 = 15; //1 + 2 * (RING_POS_NUM / 2 - 1);
+  private static GLfloat[3*ringNumVertices1] ringVertices1;
+  private static GLfloat[3*ringNumVertices2] ringVertices2;
+  private static GLfloat[3*ringNumVertices3] ringVertices3;
 
-  private static void writeOneRing() {
-    glBegin(GL_LINE_STRIP);
-    for (int i = 0; i <= RING_POS_NUM / 2 - 2; i++) {
-      glVertex3f(ringPos[i].x, RING_SIZE, ringPos[i].y);
-    }
-    for (int i = RING_POS_NUM / 2 - 2; i >= 0; i--) {
-      glVertex3f(ringPos[i].x, -RING_SIZE, ringPos[i].y);
-    }
-    glVertex3f(ringPos[0].x, RING_SIZE, ringPos[0].y);
-    glEnd();
-    glBegin(GL_LINE_STRIP);
-    glVertex3f(ringPos[RING_POS_NUM / 2 - 1].x, RING_SIZE, ringPos[RING_POS_NUM / 2 - 1].y);
-    glVertex3f(ringPos[RING_POS_NUM / 2].x, RING_SIZE, ringPos[RING_POS_NUM / 2].y);
-    glVertex3f(ringPos[RING_POS_NUM / 2].x, -RING_SIZE, ringPos[RING_POS_NUM / 2].y);
-    glVertex3f(ringPos[RING_POS_NUM / 2 - 1].x, -RING_SIZE, ringPos[RING_POS_NUM / 2 - 1].y);
-    glVertex3f(ringPos[RING_POS_NUM / 2 - 1].x, RING_SIZE, ringPos[RING_POS_NUM / 2 - 1].y);
-    glEnd();
-    glBegin(GL_LINE_STRIP);
-    for (int i = RING_POS_NUM / 2 + 1;  i <= RING_POS_NUM - 1; i++) {
-      glVertex3f(ringPos[i].x, RING_SIZE, ringPos[i].y);
-    }
-    for (int i = RING_POS_NUM - 1; i >= RING_POS_NUM / 2 + 1; i--) {
-      glVertex3f(ringPos[i].x, -RING_SIZE, ringPos[i].y);
-    }
-    glVertex3f(ringPos[RING_POS_NUM / 2 + 1].x, RING_SIZE, ringPos[RING_POS_NUM / 2 + 1].y);
-    glEnd();
+  private static void displayOneRing() {
+    glEnableClientState(GL_VERTEX_ARRAY);
+
+    glVertexPointer(3, GL_FLOAT, 0, cast(void *)(ringVertices1.ptr));
+    glDrawArrays(GL_LINE_STRIP, 0, ringNumVertices1);
+
+    glVertexPointer(3, GL_FLOAT, 0, cast(void *)(ringVertices2.ptr));
+    glDrawArrays(GL_LINE_STRIP, 0, ringNumVertices2);
+
+    glVertexPointer(3, GL_FLOAT, 0, cast(void *)(ringVertices3.ptr));
+    glDrawArrays(GL_LINE_STRIP, 0, ringNumVertices3);
+
+    glDisableClientState(GL_VERTEX_ARRAY);
   }
 
-  public static void createDisplayLists() {
+  private static void prepareOneRing() {
+    int ind;
+
+    ind = 0;
+    for (int i = 0; i <= RING_POS_NUM / 2 - 2; i++) {
+      ringVertices1[3*ind + 0] = ringPos[i].x;
+      ringVertices1[3*ind + 1] = RING_SIZE;
+      ringVertices1[3*ind + 2] = ringPos[i].y;
+      ind++;
+    }
+    for (int i = RING_POS_NUM / 2 - 2; i >= 0; i--) {
+      ringVertices1[3*ind + 0] = ringPos[i].x;
+      ringVertices1[3*ind + 1] = -RING_SIZE;
+      ringVertices1[3*ind + 2] = ringPos[i].y;
+      ind++;
+    }
+    ringVertices1[3*ind + 0] = ringPos[0].x;
+    ringVertices1[3*ind + 1] = RING_SIZE;
+    ringVertices1[3*ind + 2] = ringPos[0].y;
+
+    ind = 0;
+    ringVertices2[3*ind + 0] = ringPos[RING_POS_NUM / 2 - 1].x;
+    ringVertices2[3*ind + 1] = RING_SIZE;
+    ringVertices2[3*ind + 2] = ringPos[RING_POS_NUM / 2 - 1].y;
+    ind++;
+    ringVertices2[3*ind + 0] = ringPos[RING_POS_NUM / 2].x;
+    ringVertices2[3*ind + 1] = RING_SIZE;
+    ringVertices2[3*ind + 2] = ringPos[RING_POS_NUM / 2].y;
+    ind++;
+    ringVertices2[3*ind + 0] = ringPos[RING_POS_NUM / 2].x;
+    ringVertices2[3*ind + 1] = -RING_SIZE;
+    ringVertices2[3*ind + 2] = ringPos[RING_POS_NUM / 2].y;
+    ind++;
+    ringVertices2[3*ind + 0] = ringPos[RING_POS_NUM / 2 - 1].x;
+    ringVertices2[3*ind + 1] = -RING_SIZE;
+    ringVertices2[3*ind + 2] = ringPos[RING_POS_NUM / 2 - 1].y;
+    ind++;
+    ringVertices2[3*ind + 0] = ringPos[RING_POS_NUM / 2 - 1].x;
+    ringVertices2[3*ind + 1] = RING_SIZE;
+    ringVertices2[3*ind + 2] = ringPos[RING_POS_NUM / 2 - 1].y;
+
+    ind = 0;
+    for (int i = RING_POS_NUM / 2 + 1;  i <= RING_POS_NUM - 1; i++) {
+      ringVertices3[3*ind + 0] = ringPos[i].x;
+      ringVertices3[3*ind + 1] = RING_SIZE;
+      ringVertices3[3*ind + 2] = ringPos[i].y;
+      ind++;
+    }
+    for (int i = RING_POS_NUM - 1; i >= RING_POS_NUM / 2 + 1; i--) {
+      ringVertices3[3*ind + 0] = ringPos[i].x;
+      ringVertices3[3*ind + 1] = -RING_SIZE;
+      ringVertices3[3*ind + 2] = ringPos[i].y;
+      ind++;
+    }
+  }
+
+  public static void prepareField() {
     float d = -RING_DEG * (cast(float) (RING_POS_NUM / 2) - 0.5);
     for (int i = 0; i < RING_POS_NUM; i++, d += RING_DEG) {
       ringPos[i] = new Vector;
       ringPos[i].x = sin(d) * RING_RADIUS;
       ringPos[i].y = cos(d) * RING_RADIUS;
     }
-    displayListIdx = glGenLists(1);
-    glNewList(displayListIdx, GL_COMPILE);
-    writeOneRing();
-    glEndList();
+    prepareOneRing();
   }
 
-  public static void deleteDisplayLists() {
-    glDeleteLists(displayListIdx, 1);
-  }
 }

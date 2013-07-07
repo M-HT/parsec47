@@ -23,7 +23,6 @@ public class Shot: Actor {
   const float SPEED = 1;
  private:
   static const float FIELD_SPACE = 1;
-  static int displayListIdx;
   Field field;
   Vector vel;
   float deg;

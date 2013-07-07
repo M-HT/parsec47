@@ -7,7 +7,11 @@ module abagames.p47.Particle;
 
 private:
 import std.math;
-import opengl;
+version (USE_GLES) {
+  import opengles;
+} else {
+  import opengl;
+}
 import abagames.util.Vector;
 import abagames.util.Rand;
 import abagames.util.Actor;
@@ -15,6 +19,7 @@ import abagames.util.ActorInitializer;
 import abagames.util.sdl.Screen3D;
 import abagames.p47.LuminousActor;
 import abagames.p47.P47Screen;
+import abagames.p47.LineDrawData;
 
 /**
  * Particles.
@@ -24,6 +29,7 @@ public class Particle: LuminousActor {
   static const float R = 1, G = 1, B = 0.5;
  private:
   static Rand rand;
+  LineDrawData drawData;
   Vector pos, ppos;
   Vector vel;
   float z, mz, pz;
@@ -39,6 +45,8 @@ public class Particle: LuminousActor {
   }
 
   public override void init(ActorInitializer ini) {
+    ParticleInitializer pi = cast(ParticleInitializer) ini;
+    drawData = pi.drawData;
     pos = new Vector;
     ppos = new Vector;
     vel = new Vector;
@@ -76,17 +84,31 @@ public class Particle: LuminousActor {
   }
 
   public override void draw() {
-    glVertex3f(ppos.x, ppos.y, pz);
-    glVertex3f(pos.x, pos.y, z);
+    drawData.vertices ~= [
+      ppos.x, ppos.y, pz,
+      pos.x , pos.y , z
+    ];
   }
 
   public override void drawLuminous() {
     if (lumAlp < 0.2) return;
-    Screen3D.setColor(R, G, B, lumAlp);
-    glVertex3f(ppos.x, ppos.y, pz);
-    glVertex3f(pos.x, pos.y, z);
+
+    drawData.vertices ~= [
+      ppos.x, ppos.y, pz,
+      pos.x , pos.y , z
+    ];
+    drawData.colors ~= [
+      R * Screen3D.brightness, G * Screen3D.brightness, B * Screen3D.brightness, lumAlp,
+      R * Screen3D.brightness, G * Screen3D.brightness, B * Screen3D.brightness, lumAlp
+    ];
   }
 }
 
 public class ParticleInitializer: ActorInitializer {
+ public:
+  LineDrawData drawData;
+
+  public this(LineDrawData drawData) {
+    this.drawData = drawData;
+  }
 }
