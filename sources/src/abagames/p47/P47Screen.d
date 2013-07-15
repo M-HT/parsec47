@@ -42,7 +42,7 @@ public class P47Screen: Screen3D {
     rand = new Rand;
     if (luminous > 0) {
       luminousScreen = new LuminousScreen;
-      luminousScreen.init(luminous, width, height);
+      luminousScreen.init(luminous, startx, starty, width, height);
     } else {
       luminousScreen = null;
     }

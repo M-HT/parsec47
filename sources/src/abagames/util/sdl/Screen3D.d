@@ -29,6 +29,8 @@ public class Screen3D: Screen {
   static float brightness = 1;
   static int width = 640;
   static int height = 480;
+  static int startx = 0;
+  static int starty = 0;
   static bool lowres = false;
   static bool windowMode = false;
   static float nearPlane = 0.1;
@@ -61,12 +63,22 @@ public class Screen3D: Screen {
     } else {
       videoFlags |= SDL_FULLSCREEN;
     }
-    if (SDL_SetVideoMode(width, height, 0, videoFlags) == null) {
+    int physical_width = width;
+    int physical_height = height;
+    version (PANDORA) {
+      if (!windowMode) {
+        physical_width = 800;
+        physical_height = 480;
+        startx = (800 - width) / 2;
+        starty = (480 - height) / 2;
+      }
+    }
+    if (SDL_SetVideoMode(physical_width, physical_height, 0, videoFlags) == null) {
       throw new SDLInitFailedException
 	("Unable to create SDL screen: " ~ to!string(SDL_GetError()));
     }
     version (USE_GLES) {
-      if (EGL_Open(cast(ushort)width, cast(ushort)height) != 0) {
+      if (EGL_Open(cast(ushort)physical_width, cast(ushort)physical_height) != 0) {
         throw new SDLInitFailedException(
 	  "Unable to open EGL context");
       }
@@ -85,7 +97,7 @@ public class Screen3D: Screen {
   // Reset viewport when the screen is resized.
 
   private void screenResized() {
-    glViewport(0, 0, width, height);
+    glViewport(startx, starty, width, height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     //gluPerspective(45.0f, (GLfloat)width/(GLfloat)height, nearPlane, farPlane);

@@ -35,7 +35,10 @@ public class Pad: Input {
       throw new SDLInitFailedException(
 	"Unable to init SDL joystick: " ~ to!string(SDL_GetError()));
     }
-    stick = SDL_JoystickOpen(0);
+    version (PANDORA) {
+    } else {
+      stick = SDL_JoystickOpen(0);
+    }
   }
 
   public override void handleEvent(SDL_Event *event) {
@@ -67,6 +70,7 @@ public class Pad: Input {
   }
 
   public int getButtonState() {
+    bool btnx = false, btnz = false;
     int btn = 0;
     int btn1 = 0, btn2 = 0, btn3 = 0, btn4 = 0, btn5 = 0, btn6 = 0, btn7 = 0, btn8 = 0;
     if (stick) {
@@ -79,16 +83,23 @@ public class Pad: Input {
       btn7 = SDL_JoystickGetButton(stick, 6);
       btn8 = SDL_JoystickGetButton(stick, 7);
     }
-    if (keys[SDLK_z] == SDL_PRESSED || keys[SDLK_LCTRL] == SDL_PRESSED || 
-	btn1 || btn4 || btn5 || btn8) {
+    version (PANDORA) {
+      if (keys[SDLK_HOME] == SDL_PRESSED || keys[SDLK_PAGEUP] == SDL_PRESSED) btnz = true;
+      if (keys[SDLK_PAGEDOWN] == SDL_PRESSED || keys[SDLK_END] == SDL_PRESSED) btnx = true;
+    } else {
+      if (keys[SDLK_z] == SDL_PRESSED || keys[SDLK_LCTRL] == SDL_PRESSED ||
+	  btn1 || btn4 || btn5 || btn8) btnz = true;
+      if (keys[SDLK_x] == SDL_PRESSED ||
+	  keys[SDLK_LALT] == SDL_PRESSED || keys[SDLK_LSHIFT] == SDL_PRESSED ||
+	  btn2 || btn3 || btn6 || btn7) btnx = true;
+    }
+    if (btnz) {
       if (!buttonReversed)
 	btn |= PAD_BUTTON1;
       else
 	btn |= PAD_BUTTON2;
     }
-    if (keys[SDLK_x] == SDL_PRESSED ||
-	keys[SDLK_LALT] == SDL_PRESSED || keys[SDLK_LSHIFT] == SDL_PRESSED ||
-	btn2 || btn3 || btn6 || btn7) {
+    if (btnx) {
       if (!buttonReversed)
 	btn |= PAD_BUTTON2;
       else
