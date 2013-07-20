@@ -208,6 +208,13 @@ public class Title {
     if (curY < P47PrefManager.DIFFICULTY_NUM)
       LetterRender.drawNum
 	(prefManager.hiScore[mode][curY][curX], 470, 210, 10, LetterRender.TO_RIGHT);
+    version (PANDORA) {
+      if (curY == 1 && curX == 0) {
+        LetterRender.drawString("Compo4All", 365, 250, 8, LetterRender.TO_RIGHT);
+        LetterRender.drawString("supported", 363, 280, 8, LetterRender.TO_RIGHT);
+        LetterRender.drawString("mode", 433, 310, 8, LetterRender.TO_RIGHT);
+      }
+    }
     sy = 260;
     for (int y = 0; y < P47PrefManager.DIFFICULTY_NUM + 1; y++) {
       sx = 180;

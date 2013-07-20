@@ -14,6 +14,7 @@ import abagames.util.PrefManager;
  */
 public class P47PrefManager: PrefManager {
  public:
+  static int C4Amode = 0;
   static const int PREV_VERSION_NUM = 10;
   static const int VERSION_NUM = 20;
   static string PREF_FILE = "p47.prf";
@@ -81,6 +82,16 @@ public class P47PrefManager: PrefManager {
       init();
     } finally {
       fd.close();
+    }
+
+    if (C4Amode == 1) {
+        selectedDifficulty = 1;
+        selectedParsecSlot = 0;
+        selectedMode = 0;
+    } else if (C4Amode == 2) {
+        selectedDifficulty = 1;
+        selectedParsecSlot = 0;
+        selectedMode = 1;
     }
   }
 

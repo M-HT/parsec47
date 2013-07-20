@@ -36,6 +36,11 @@ public class Pad: Input {
 	"Unable to init SDL joystick: " ~ to!string(SDL_GetError()));
     }
     version (PANDORA) {
+      foreach (i; 0..SDL_NumJoysticks()) {
+        if (to!string(SDL_JoystickName(i)) == "nub0") {
+          stick = SDL_JoystickOpen(i);
+        }
+      }
     } else {
       stick = SDL_JoystickOpen(0);
     }
