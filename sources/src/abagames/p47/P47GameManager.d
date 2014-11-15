@@ -14,6 +14,10 @@ version (USE_GLES) {
 }
 import SDL;
 import bulletml;
+version (PANDORA) {
+    import std.conv;
+    import std.process;
+}
 import abagames.util.Rand;
 import abagames.util.Vector;
 import abagames.util.ActorPool;
@@ -358,6 +362,15 @@ public class P47GameManager: GameManager {
     if (stageManager.parsec > prefManager.reachedParsec[mode][difficulty])
       prefManager.reachedParsec[mode][difficulty] = stageManager.parsec;
     Sound.fadeMusic();
+
+    version (PANDORA) {
+      if (difficulty == 1 && parsecSlot == 0) {
+        if (mode == ROLL)
+          system(escapeShellCommand("fusilli", "--cache", "push", "parsec47_roll", to!string(score), "0") ~ " >/dev/null 2>&1");
+        else
+          system(escapeShellCommand("fusilli", "--cache", "push", "parsec47_lock", to!string(score), "0") ~ " >/dev/null 2>&1");
+      }
+    }
   }
 
   private void startPause() {
