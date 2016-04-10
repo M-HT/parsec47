@@ -22,7 +22,7 @@ public class LuminousScreen {
   const int LUMINOUS_TEXTURE_HEIGHT_MAX = 64;
   GLuint td[LUMINOUS_TEXTURE_WIDTH_MAX * LUMINOUS_TEXTURE_HEIGHT_MAX * 4 * uint.sizeof];
   int luminousTextureWidth = 64, luminousTextureHeight = 64;
-  int screenWidth, screenHeight;
+  int screenStartx, screenStarty, screenWidth, screenHeight;
   float luminous;
 
   private void makeLuminousTexture() {
@@ -37,9 +37,11 @@ public class LuminousScreen {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   }
 
-  public void init(float luminous, int width, int height) {
+  public void init(float luminous, int startx, int starty, int width, int height) {
     makeLuminousTexture();
     this.luminous = luminous;
+    screenStartx = startx;
+    screenStarty = starty;
     resized(width, height);
   }
 
@@ -60,7 +62,7 @@ public class LuminousScreen {
     glBindTexture(GL_TEXTURE_2D, luminousTexture);
     glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
 		     0, 0, luminousTextureWidth, luminousTextureHeight, 0);
-    glViewport(0, 0, screenWidth, screenHeight);
+    glViewport(screenStartx, screenStarty, screenWidth, screenHeight);
   }
 
   private void viewOrtho() {

@@ -84,6 +84,15 @@ private void parseArgs(string[] args) {
     case "-accframe":
       mainLoop.accframe = 1;
       break;
+    case "-c4amode":
+      if (i >= args.length - 1) {
+	usage(args[0]);
+	throw new Exception("Invalid options");
+      }
+      i++;
+      int c = to!int(args[i]);
+      P47PrefManager.C4Amode = c;
+      break;
     default:
       usage(args[0]);
       throw new Exception("Invalid options");

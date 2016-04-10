@@ -116,7 +116,7 @@ public class Title {
     if (boxCnt >= 0)
       boxCnt--;
   }
-  
+
   public void setStatus() {
     gameManager.difficulty = curY;
     gameManager.parsecSlot = curX;
@@ -177,10 +177,10 @@ public class Title {
   public void draw() {
     int sx, sy;
     LetterRender.drawString
-      (DIFFICULTY_STR[curY], 470 - DIFFICULTY_STR[curY].length * 14, 150, 
+      (DIFFICULTY_STR[curY], 470 - DIFFICULTY_STR[curY].length * 14, 150,
        10, LetterRender.TO_RIGHT);
     LetterRender.drawString
-      (MODE_STR[mode], 470 - MODE_STR[mode].length * 14, 450, 
+      (MODE_STR[mode], 470 - MODE_STR[mode].length * 14, 450,
        10, LetterRender.TO_RIGHT);
     if (curX > 0) {
       LetterRender.drawString("START AT PARSEC", 290, 180, 6, LetterRender.TO_RIGHT);
@@ -189,6 +189,13 @@ public class Title {
     if (curY < P47PrefManager.DIFFICULTY_NUM)
       LetterRender.drawNum
 	(prefManager.hiScore[mode][curY][curX], 470, 210, 10, LetterRender.TO_RIGHT);
+    version (PANDORA) {
+      if (curY == 1 && curX == 0) {
+        LetterRender.drawString("Compo4All", 365, 250, 8, LetterRender.TO_RIGHT);
+        LetterRender.drawString("supported", 363, 280, 8, LetterRender.TO_RIGHT);
+        LetterRender.drawString("mode", 433, 310, 8, LetterRender.TO_RIGHT);
+      }
+    }
     sy = 260;
     for (int y = 0; y < P47PrefManager.DIFFICULTY_NUM + 1; y++) {
       sx = 180;
