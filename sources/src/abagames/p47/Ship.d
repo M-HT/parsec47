@@ -27,10 +27,10 @@ public class Ship {
   static bool isSlow = false;
   static int displayListIdx;
   Vector pos;
-  const float SIZE = 0.3;
+  static const float SIZE = 0.3;
   bool restart;
-  const int RESTART_CNT = 300;
-  const int INVINCIBLE_CNT = 228;
+  static const int RESTART_CNT = 300;
+  static const int INVINCIBLE_CNT = 228;
   int cnt;
  private:
   static Rand rand;
@@ -38,22 +38,22 @@ public class Ship {
   Field field;
   P47GameManager manager;
   Vector ppos;
-  const float BASE_SPEED = 0.6;
-  const float SLOW_BASE_SPEED = 0.3;
+  static const float BASE_SPEED = 0.6;
+  static const float SLOW_BASE_SPEED = 0.3;
   float baseSpeed, slowSpeed;
 
   float speed;
   Vector vel;
-  const float BANK_BASE = 50;
+  static const float BANK_BASE = 50;
   float bank;
   Vector firePos;
   float fireWideDeg;
-  const float FIRE_WIDE_BASE_DEG = 0.7;
-  const float FIRE_NARROW_BASE_DEG = 0.5;
+  static const float FIRE_WIDE_BASE_DEG = 0.7;
+  static const float FIRE_NARROW_BASE_DEG = 0.5;
   int fireCnt;
-  const float TURRET_INTERVAL_LENGTH = 0.2;
+  static const float TURRET_INTERVAL_LENGTH = 0.2;
   int ttlCnt;
-  const float FIELD_SPACE = 1.5;
+  static const float FIELD_SPACE = 1.5;
   float fieldLimitX, fieldLimitY;
   int rollLockCnt;
   bool rollCharged;

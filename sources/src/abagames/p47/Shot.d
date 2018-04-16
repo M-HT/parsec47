@@ -20,7 +20,7 @@ import abagames.p47.P47Screen;
 public class Shot: Actor {
  public:
   Vector pos;
-  const float SPEED = 1;
+  static const float SPEED = 1;
  private:
   static const float FIELD_SPACE = 1;
   static int displayListIdx;
@@ -28,7 +28,7 @@ public class Shot: Actor {
   Vector vel;
   float deg;
   int cnt;
-  const int RETRO_CNT = 4;
+  static const int RETRO_CNT = 4;
 
   public override Actor newActor() {
     return new Shot;

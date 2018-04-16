@@ -25,8 +25,8 @@ public class BarrageManager {
     LARGE, LARGEMOVE,
     MORPH_LOCK, SMALL_LOCK, MIDDLESUB_LOCK,
   }
-  const int BARRAGE_TYPE = 13;
-  const int BARRAGE_MAX = 64;
+  static const int BARRAGE_TYPE = 13;
+  static const int BARRAGE_MAX = 64;
   BulletMLParserTinyXML* parser[BARRAGE_TYPE][BARRAGE_MAX];
   int parserNum[BARRAGE_TYPE];
  private:
