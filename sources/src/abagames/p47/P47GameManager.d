@@ -8,7 +8,7 @@ module abagames.p47.P47GameManager;
 private:
 import std.math;
 import opengl;
-import SDL;
+import bindbc.sdl;
 import bulletml;
 version (PANDORA) {
     import std.conv;
@@ -399,7 +399,7 @@ public class P47GameManager: GameManager {
     particles.move();
     fragments.move();
     moveScreenShake();
-    if (pad.keys[SDLK_p] == SDL_PRESSED) {
+    if (pad.keys[SDL_SCANCODE_P] == SDL_PRESSED) {
       if (!pPrsd) {
 	pPrsd = true;
 	startPause();
@@ -480,7 +480,7 @@ public class P47GameManager: GameManager {
 
   private void pauseMove() {
     pauseCnt++;
-    if (pad.keys[SDLK_p] == SDL_PRESSED) {
+    if (pad.keys[SDL_SCANCODE_P] == SDL_PRESSED) {
       if (!pPrsd) {
 	pPrsd = true;
 	resumePause();
@@ -491,7 +491,7 @@ public class P47GameManager: GameManager {
   }
 
   public override void move() {
-    if (pad.keys[SDLK_ESCAPE] == SDL_PRESSED) {
+    if (pad.keys[SDL_SCANCODE_ESCAPE] == SDL_PRESSED) {
       mainLoop.breakLoop();
       return;
     }
@@ -697,12 +697,6 @@ public class P47GameManager: GameManager {
   }
 
   public override void draw() {
-    SDL_Event e = mainLoop.event;
-    if (e.type == SDL_VIDEORESIZE) {
-      SDL_ResizeEvent re = e.resize;
-      if (re.w > 150 && re.h > 100)
-	screen.resized(re.w, re.h);
-    }
     screen.startRenderToTexture();
     glPushMatrix();
     setEyepos();

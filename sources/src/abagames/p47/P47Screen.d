@@ -37,7 +37,7 @@ public class P47Screen: Screen3D {
     rand = new Rand;
     if (luminous > 0) {
       luminousScreen = new LuminousScreen;
-      luminousScreen.init(luminous, startx, starty, width, height);
+      luminousScreen.init(luminous, width, height);
     } else {
       luminousScreen = null;
     }
@@ -65,7 +65,7 @@ public class P47Screen: Screen3D {
 
   public override void resized(int width, int height) {
     if (luminousScreen)
-      luminousScreen.resized(width, height);
+      luminousScreen.resized(this.width, this.height);
     super.resized(width, height);
   }
 

@@ -11,10 +11,10 @@ Control your ship and destroy enemies. While holding a slow key, the ship become
 You can select the game mode from 2 types. Press a slow key in the title screen to change the game mode. Each mode has a different barrage pattern.
 <hr/>
 
-The game was created by Kenta Cho (http://www.asahi-net.or.jp/~cs8k-cyu/windows/p47_e.html) and released with BSD 2-Clause License. (See readme.txt/readme_e.txt)
+The game was created by [Kenta Cho](https://www.asahi-net.or.jp/~cs8k-cyu/windows/p47_e.html "Kenta Cho - PARSEC47") and released with BSD 2-Clause License. (See readme.txt/readme_e.txt)
 
-It uses the libBulletML library by shinichiro.h (http://shinh.skr.jp/libbulletml/index_en.html).
+This fork is a port to D version 2, Linux, SDL2, Pandora, DragonBox Pyra.
 
-This fork is a port to D version 2, Linux, Pandora. It also contains an OpenGL ES branch.
+It uses the [libBulletML](https://shinh.skr.jp/libbulletml/index_en.html "libBulletML") library by shinichiro.h.
 
-The Pandora release is based on OpenGL ES branch, but it also works in master branch (OpenGL) using ptitSeb's fork of glshim - https://github.com/ptitSeb/glshim
+It uses [BindBC-SDL](https://github.com/BindBC/bindbc-sdl "BindBC-SDL") (D bindings to SDL), which is under [Boost Software License](https://www.boost.org/LICENSE_1_0.txt "Boost Software License").

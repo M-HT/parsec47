@@ -8,8 +8,7 @@ module abagames.util.sdl.Sound;
 private:
 import std.string;
 import std.conv;
-import SDL;
-import SDL_mixer;
+import bindbc.sdl;
 import abagames.util.sdl.SDLInitFailedException;
 
 /**
@@ -26,7 +25,7 @@ public class Sound {
     if (noSound) return;
 
     int audio_rate;
-    Uint16 audio_format;
+    ushort audio_format;
     int audio_channels;
     int audio_buffers;
 
@@ -40,10 +39,24 @@ public class Sound {
     audio_format = AUDIO_S16;
     audio_channels = 1;
     audio_buffers = 4096;
-    if (Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers) < 0) {
-      noSound = 1;
-      throw new SDLInitFailedException
-	("Couldn't open audio: " ~ to!string(SDL_GetError()));
+    bool sound_opened = false;
+    static if (SDL_MIXER_VERSION_ATLEAST(2, 0, 2)) {
+      const SDL_version *link_version = Mix_Linked_Version();
+      if (SDL_version(link_version.major, link_version.minor, link_version.patch) >= SDL_version(2, 0, 2)) {
+        sound_opened = true;
+        if (Mix_OpenAudioDevice(audio_rate, audio_format, audio_channels, audio_buffers, null, 0xff) < 0) {
+          noSound = 1;
+          throw new SDLInitFailedException
+            ("Couldn't open audio: " ~ to!string(SDL_GetError()));
+        }
+      }
+    }
+    if (!sound_opened) {
+      if (Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers) < 0) {
+        noSound = 1;
+        throw new SDLInitFailedException
+          ("Couldn't open audio: " ~ to!string(SDL_GetError()));
+      }
     }
     Mix_QuerySpec(&audio_rate, &audio_format, &audio_channels);
   }

@@ -6,12 +6,12 @@
 module abagames.util.sdl.Input;
 
 private:
-import SDL;
+import bindbc.sdl;
 
 /**
  * Input device interface.
  */
 //public interface Input {
 public abstract class Input {
-  public void handleEvent(SDL_Event *event);
+  public void handleEvents();
 }

@@ -11,6 +11,7 @@ import std.string;
 import core.stdc.string;
 import opengl;
 import abagames.util.Rand;
+import abagames.util.sdl.Screen3D;
 
 /**
  * Luminous effect texture.
@@ -22,7 +23,7 @@ public class LuminousScreen {
   const int LUMINOUS_TEXTURE_HEIGHT_MAX = 64;
   GLuint[LUMINOUS_TEXTURE_WIDTH_MAX * LUMINOUS_TEXTURE_HEIGHT_MAX * 4 * uint.sizeof] td;
   int luminousTextureWidth = 64, luminousTextureHeight = 64;
-  int screenStartx, screenStarty, screenWidth, screenHeight;
+  int screenWidth, screenHeight;
   float luminous;
 
   private void makeLuminousTexture() {
@@ -31,17 +32,15 @@ public class LuminousScreen {
     memset(data, 0, luminousTextureWidth * luminousTextureHeight * 4 * uint.sizeof);
     glGenTextures(1, &luminousTexture);
     glBindTexture(GL_TEXTURE_2D, luminousTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, 4, luminousTextureWidth, luminousTextureHeight, 0,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, luminousTextureWidth, luminousTextureHeight, 0,
 		 GL_RGBA, GL_UNSIGNED_BYTE, data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   }
 
-  public void init(float luminous, int startx, int starty, int width, int height) {
+  public void init(float luminous, int width, int height) {
     makeLuminousTexture();
     this.luminous = luminous;
-    screenStartx = startx;
-    screenStarty = starty;
     resized(width, height);
   }
 
@@ -60,9 +59,9 @@ public class LuminousScreen {
 
   public void endRenderToTexture() {
     glBindTexture(GL_TEXTURE_2D, luminousTexture);
-    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
 		     0, 0, luminousTextureWidth, luminousTextureHeight, 0);
-    glViewport(screenStartx, screenStarty, screenWidth, screenHeight);
+    glViewport(Screen3D.screenStartX, Screen3D.screenStartY, Screen3D.screenWidth, Screen3D.screenHeight);
   }
 
   private void viewOrtho() {

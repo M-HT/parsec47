@@ -1479,4 +1479,3 @@ alias void function
 alias void function
     (GLenum target, GLenum pname, GLfloat *params) PFNGLGETCOLORTABLEPARAMETERFVEXTPROC;
 
-import openglu;
