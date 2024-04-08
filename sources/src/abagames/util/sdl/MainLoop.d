@@ -98,7 +98,6 @@ public class MainLoop {
             break;
         }
       }
-      SDL_PollEvent(&event);
       input.handleEvents();
       nowTick = SDL_GetTicks();
       frame = cast(int) (nowTick-prvTickCount) / interval;
