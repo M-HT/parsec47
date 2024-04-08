@@ -21,8 +21,8 @@ public class P47PrefManager: PrefManager {
   static const int MODE_NUM = 2;
   static const int DIFFICULTY_NUM = 4;
   static const int REACHED_PARSEC_SLOT_NUM = 10;
-  int hiScore[MODE_NUM][DIFFICULTY_NUM][REACHED_PARSEC_SLOT_NUM];
-  int reachedParsec[MODE_NUM][DIFFICULTY_NUM];
+  int[REACHED_PARSEC_SLOT_NUM][DIFFICULTY_NUM][MODE_NUM] hiScore;
+  int[DIFFICULTY_NUM][MODE_NUM] reachedParsec;
   int selectedDifficulty, selectedParsecSlot, selectedMode;
 
   private void init() {
@@ -40,13 +40,13 @@ public class P47PrefManager: PrefManager {
   }
 
   private void loadPrevVersionData(File fd) {
-    int read_data[1];
+    int[1] read_data;
     for (int i = 0; i < DIFFICULTY_NUM; i++) {
       fd.rawRead(read_data);
       reachedParsec[0][i] = read_data[0];
       fd.rawRead(hiScore[0][i]);
     }
-    int read_data2[2];
+    int[2] read_data2;
     fd.rawRead(read_data2);
     selectedDifficulty = read_data2[0];
     selectedParsecSlot = read_data2[1];
@@ -55,7 +55,7 @@ public class P47PrefManager: PrefManager {
   public override void load() {
     scope File fd;
     try {
-      int read_data[1];
+      int[1] read_data;
       fd.open(PREF_FILE);
       fd.rawRead(read_data);
       if (read_data[0] == PREV_VERSION_NUM) {
@@ -73,7 +73,7 @@ public class P47PrefManager: PrefManager {
 	  fd.rawRead(hiScore[k][i]);
 	}
       }
-      int read_data2[3];
+      int[3] read_data2;
       fd.rawRead(read_data2);
       selectedDifficulty = read_data2[0];
       selectedParsecSlot = read_data2[1];
@@ -99,7 +99,7 @@ public class P47PrefManager: PrefManager {
     scope File fd;
     try {
       fd.open(PREF_FILE, "wb");
-      int write_data[1] = [VERSION_NUM];
+      int[1] write_data = [VERSION_NUM];
       fd.rawWrite(write_data);
       for (int k = 0; k < MODE_NUM; k++) {
         for (int i = 0; i < DIFFICULTY_NUM; i++) {
@@ -108,7 +108,7 @@ public class P47PrefManager: PrefManager {
           fd.rawWrite(hiScore[k][i]);
         }
       }
-      const int write_data2[3] = [selectedDifficulty, selectedParsecSlot, selectedMode];
+      const int[3] write_data2 = [selectedDifficulty, selectedParsecSlot, selectedMode];
       fd.rawWrite(write_data2);
     } finally {
       fd.close();

@@ -15,7 +15,7 @@ import abagames.util.bulletml.Bullet;
 public class MorphBullet: Bullet {
  public:
   static const int MORPH_MAX = 8;
-  BulletMLParser *morphParser[MORPH_MAX];
+  BulletMLParser*[MORPH_MAX] morphParser;
   int morphNum;
   int morphIdx;
   int morphCnt;
@@ -27,7 +27,7 @@ public class MorphBullet: Bullet {
     super(id);
   }
 
-  public void setMorph(BulletMLParser *mrp[], int num, int idx, int cnt) {
+  public void setMorph(BulletMLParser*[] mrp, int num, int idx, int cnt) {
     if (cnt <= 0) {
       isMorph = false;
       return;

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-FLAGS="-fversion=PANDORA -frelease -c -O2 -pipe"
+FLAGS="-fversion=PANDORA -frelease -c -O2 -Wall -pipe"
 
 rm import/*.o*
 rm src/*.o*

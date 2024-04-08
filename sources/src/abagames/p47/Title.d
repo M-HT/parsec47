@@ -25,8 +25,8 @@ public class Title {
   P47GameManager gameManager;
   P47PrefManager prefManager;
   Field field;
-  int slotNum[P47PrefManager.MODE_NUM][P47PrefManager.DIFFICULTY_NUM + 1];
-  int startReachedParsec[P47PrefManager.MODE_NUM][P47PrefManager.DIFFICULTY_NUM];
+  int[P47PrefManager.DIFFICULTY_NUM + 1][P47PrefManager.MODE_NUM] slotNum;
+  int[P47PrefManager.DIFFICULTY_NUM][P47PrefManager.MODE_NUM] startReachedParsec;
   int curX, curY;
   int mode;
   static const int BOX_COUNT = 16;

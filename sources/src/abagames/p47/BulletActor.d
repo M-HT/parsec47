@@ -92,7 +92,7 @@ public class BulletActor: Actor {
   public void set(BulletMLRunner* runner,
 		  float x, float y, float deg, float speed, float rank,
 		  float speedRank, int shape, int color, float size, float xReverse,
-		  BulletMLParser *morph[], int morphNum, int morphIdx, int morphCnt) {
+		  BulletMLParser*[] morph, int morphNum, int morphIdx, int morphCnt) {
     bullet.set(runner, x, y, deg, speed, rank);
     bullet.setMorph(morph, morphNum, morphIdx, morphCnt);
     isSimple = false;
@@ -216,7 +216,7 @@ public class BulletActor: Actor {
 
   public static const int BULLET_SHAPE_NUM = 7;
   public static const int BULLET_COLOR_NUM = 4;
-  private static const float shapePos[BULLET_SHAPE_NUM][][3] =
+  private static const float[3][][BULLET_SHAPE_NUM] shapePos =
     [
      [[-0.5, -0.5], [0.5, -0.5], [0, 1],],
      [[0, -1], [0.5, 0], [0, 1], [-0.5, 0]],
@@ -293,7 +293,7 @@ public class BulletActor: Actor {
   private static const float SHAPE_BASE_COLOR_R = 1;
   private static const float SHAPE_BASE_COLOR_G = 0.9;
   private static const float SHAPE_BASE_COLOR_B = 0.7;
-  private static const float bulletColor[BULLET_COLOR_NUM][3] =
+  private static const float[3][BULLET_COLOR_NUM] bulletColor =
     [
      [1, 0, 0], [0.2, 1, 0.4], [0.3, 0.3, 1], [1, 1, 0],
      ];

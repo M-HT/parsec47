@@ -128,7 +128,7 @@ public class Field {
   }
 
   private static const int RING_POS_NUM = 16;
-  private static Vector ringPos[RING_POS_NUM];
+  private static Vector[RING_POS_NUM] ringPos;
   private static const float RING_DEG = std.math.PI / 3 / (cast(float) (RING_POS_NUM / 2) + 0.5);
   private static const float RING_RADIUS = 10;
   private static const float RING_SIZE = 0.5;

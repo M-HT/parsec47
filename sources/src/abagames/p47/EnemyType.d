@@ -19,7 +19,7 @@ import abagames.p47.MorphBullet;
 public class Barrage {
  public:
   BulletMLParser *parser;
-  BulletMLParser *morphParser[MorphBullet.MORPH_MAX];
+  BulletMLParser*[MorphBullet.MORPH_MAX] morphParser;
   int morphNum, morphCnt;
   float rank, speedRank, morphRank;
   int shape, color;
@@ -35,12 +35,12 @@ public class BatteryType {
   static const int WING_SHAPE_POINT_NUM = 3;
   static const int WING_BATTERY_MAX = 3;
   static const int BARRAGE_PATTERN_MAX = 8;
-  Vector wingShapePos[WING_SHAPE_POINT_NUM];
+  Vector[WING_SHAPE_POINT_NUM] wingShapePos;
   Vector collisionPos, collisionSize;
-  Vector batteryPos[WING_BATTERY_MAX];
+  Vector[WING_BATTERY_MAX] batteryPos;
   int batteryNum;
   float r, g, b;
-  Barrage barrage[BARRAGE_PATTERN_MAX];
+  Barrage[BARRAGE_PATTERN_MAX] barrage;
   bool xReverseAlternate;
   int shield;
 
@@ -69,14 +69,14 @@ public class EnemyType {
   static const int BATTERY_MAX = 4;
   static const int ENEMY_TYPE_MAX = 32;
   // Whether each type of the enemy is exist or not.
-  static bool isExist[ENEMY_TYPE_MAX];
-  Barrage barrage[BARRAGE_PATTERN_MAX];
-  Vector bodyShapePos[BODY_SHAPE_POINT_NUM];
+  static bool[ENEMY_TYPE_MAX] isExist;
+  Barrage[BARRAGE_PATTERN_MAX] barrage;
+  Vector[BODY_SHAPE_POINT_NUM] bodyShapePos;
   Vector collisionSize;
   bool wingCollision;
   float r, g, b;
   float retroSize;
-  BatteryType batteryType[BATTERY_MAX];
+  BatteryType[BATTERY_MAX] batteryType;
   int batteryNum;
   int shield;
   int fireInterval, firePeriod, barragePatternNum;
@@ -122,7 +122,7 @@ public class EnemyType {
   }
 
   // To avoid using the same morph pattern.
-  private static bool usedMorphParser[BarrageManager.BARRAGE_MAX];
+  private static bool[BarrageManager.BARRAGE_MAX] usedMorphParser;
 
   private void setBarrageType(Barrage br, int btn, int mode) {
     br.parser = barrageManager.parser
@@ -184,7 +184,7 @@ public class EnemyType {
     }
     if (intense == VERYWEAK) {
       br.morphRank /= 2;
-      br.morphCnt /= 1.7f;
+      br.morphCnt = cast(int)(br.morphCnt / 1.7f);
     } else if (intense == MORPHWEAK) {
       br.morphRank /= 2;
     } else if (intense == WEAK) {

@@ -25,8 +25,8 @@ public class Fragment: LuminousActor {
  private:
   static Rand rand;
   static const int POINT_NUM = 2;
-  Vector pos[POINT_NUM];
-  Vector vel[POINT_NUM];
+  Vector[POINT_NUM] pos;
+  Vector[POINT_NUM] vel;
   Vector impact;
   float z;
   float lumAlp;

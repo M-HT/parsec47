@@ -33,7 +33,7 @@ import abagames.p47.SoundManager;
 public class Enemy: Actor {
   // Side wing with batteries.
   private struct Battery {
-    BulletActor topBullet[BatteryType.WING_BATTERY_MAX];
+    BulletActor[BatteryType.WING_BATTERY_MAX] topBullet;
     int shield;
     bool damaged;
   }
@@ -42,7 +42,7 @@ public class Enemy: Actor {
   static const float FIELD_SPACE = 0.5;
   Vector pos;
   EnemyType type;
-  Battery battery[EnemyType.BATTERY_MAX];
+  Battery[EnemyType.BATTERY_MAX] battery;
   int shield;
  private:
   static const int MOVE_POINT_MAX = 8;
@@ -56,7 +56,7 @@ public class Enemy: Actor {
   int cnt;
   BulletActor topBullet;
   BulletActor moveBullet;
-  Vector movePoint[MOVE_POINT_MAX];
+  Vector[MOVE_POINT_MAX] movePoint;
   int movePointNum, movePointIdx;
   float speed, deg;
   bool onRoute;
@@ -272,7 +272,7 @@ public class Enemy: Actor {
   private static int SHOT_DAMAGE = 1;
   private static int ROLL_DAMAGE = 1;
   private static int LOCK_DAMAGE = 7;
-  private static const int ENEMY_TYPE_SCORE[] = [100, 500, 1000, 5000, 10000];
+  private static const int[] ENEMY_TYPE_SCORE = [100, 500, 1000, 5000, 10000];
   private static const int ENEMY_WING_SCORE = 1000;
 
   private void addDamage(int dmg) {

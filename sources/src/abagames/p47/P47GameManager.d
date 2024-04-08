@@ -85,7 +85,7 @@ public class P47GameManager: GameManager {
   int pauseCnt;
   const int BOSS_WING_NUM = 4;
   int bossShield;
-  int bossWingShield[BOSS_WING_NUM];
+  int[BOSS_WING_NUM] bossWingShield;
   const float[P47PrefManager.MODE_NUM] SLOWDOWN_START_BULLETS_SPEED = [30, 42];
   float interval;
   Title title;

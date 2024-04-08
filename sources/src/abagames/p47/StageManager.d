@@ -59,13 +59,13 @@ public class StageManager {
   BarrageManager barrageManager;
   Field field;
   const int SIMULTANEOUS_APPEARNCE_MAX = 4;
-  EnemyAppearance appearance[SIMULTANEOUS_APPEARNCE_MAX];
+  EnemyAppearance[SIMULTANEOUS_APPEARNCE_MAX] appearance;
   const int SMALL_ENEMY_TYPE_MAX = 3;
-  EnemyType smallType[SMALL_ENEMY_TYPE_MAX];
+  EnemyType[SMALL_ENEMY_TYPE_MAX] smallType;
   const int MIDDLE_ENEMY_TYPE_MAX = 4;
-  EnemyType middleType[MIDDLE_ENEMY_TYPE_MAX];
+  EnemyType[MIDDLE_ENEMY_TYPE_MAX] middleType;
   const int LARGE_ENEMY_TYPE_MAX = 2;
-  EnemyType largeType[LARGE_ENEMY_TYPE_MAX];
+  EnemyType[LARGE_ENEMY_TYPE_MAX] largeType;
   EnemyType middleBossType;
   EnemyType largeBossType;
   int apNum;
@@ -254,7 +254,7 @@ public class StageManager {
 
   // [#smalltype, #middletype, #largetype]
   private const int MIDDLE_RUSH_SECTION_PATTERN = 6;
-  private const int apparancePattern[][][3] =
+  private const int[3][][] apparancePattern =
     [
      [[1, 0, 0], [2, 0, 0], [1, 1, 0], [1, 0, 1], [2, 1, 0], [2, 0, 1], [0, 1, 1]],
      [[1, 0, 0], [1, 1, 0], [1, 1, 0], [1, 0, 1], [2, 1, 0], [1, 1, 1], [0, 1, 1]],

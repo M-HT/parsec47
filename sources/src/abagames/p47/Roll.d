@@ -22,14 +22,14 @@ public class Roll: Actor {
  public:
   bool released;
   static const int LENGTH = 4;
-  Vector pos[LENGTH];
+  Vector[LENGTH] pos;
   static const int NO_COLLISION_CNT = 45;
   int cnt;
  private:
   static const float BASE_LENGTH = 1.0, BASE_RESISTANCE = 0.8, BASE_SPRING = 0.2;
   static const float BASE_SIZE = 0.2, BASE_DIST = 3;
   static const float SPEED = 0.75;
-  Vector vel[LENGTH];
+  Vector[LENGTH] vel;
   Ship ship;
   Field field;
   P47GameManager manager;

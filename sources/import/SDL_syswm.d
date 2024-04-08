@@ -22,7 +22,7 @@
 
 /* Include file for SDL custom system window manager hooks */
 
-import SDL_version;
+import SDL_version_;
 
 extern(C):
 
@@ -59,6 +59,6 @@ struct SDL_SysWMinfo {
  * This function gives you custom hooks into the window manager information.
  * It fills the structure pointed to by 'info' with custom information and
  * returns 1 if the function is implemented.  If it's not implemented, or
- * the version member of the 'info' structure is invalid, it returns 0. 
+ * the version member of the 'info' structure is invalid, it returns 0.
  */
 int SDL_GetWMInfo(SDL_SysWMinfo *info);
