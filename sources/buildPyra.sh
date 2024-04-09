@@ -1,6 +1,6 @@
 #!/bin/sh
 
-FLAGS="-frelease -fdata-sections -ffunction-sections -c -O2 -Wall -pipe -fversion=PYRA -fversion=BindSDL_Static -fversion=SDL_201 -fversion=SDL_Mixer_202 -I`pwd`/import"
+FLAGS="-frelease -fdata-sections -ffunction-sections -c -O2 -Wall -pipe -fversion=PYRA -fversion=BindSDL_Static -fversion=SDL_201 -fversion=SDL_Mixer_202 -I`pwd`/import -march=armv7ve+simd -mcpu=cortex-a15 -mtune=cortex-a15 -mfpu=neon-vfpv4 -mfloat-abi=hard -mthumb"
 
 rm import/*.o*
 rm import/sdl/*.o*
